@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Apache Flink Stateful Functions Playground
 
 This repository contains tutorials and examples for [Stateful Functions](https://flink.apache.org/stateful-functions.html). The material here is a great starting point if you've just started with getting to know the project or looking for specific examples of common usage patterns.
@@ -25,3 +26,6 @@ The code in this repository is licensed under the [Apache Software License 2.0](
 hello
 it's me
 I was waiting
+=======
+# Apache-Flink-IN4331-Group15
+>>>>>>> 80dede3d3be26ebb831c45018d130302b23135e4
