@@ -70,7 +70,7 @@ final class UserShoppingCartFn implements StatefulFunction {
 
     if (message.is(Messages.ITEM_AVAILABILITY_TYPE)) {
       final Messages.ItemAvailability availability = message.as(Messages.ITEM_AVAILABILITY_TYPE);
-      LOG.info("{}", availability);
+      LOG.info("{}", availability); //OUTOFSTOCK
       LOG.info("Scope: {}", context.self());
       LOG.info("Caller: {}", context.caller());
       if (Messages.ItemAvailability.Status.INSTOCK.equals(availability.getStatus())) {
