@@ -37,6 +37,7 @@ public final class GreeterAppServer {
     final StatefulFunctions functions = new StatefulFunctions();
     functions.withStatefulFunction(UserFn.SPEC);
     functions.withStatefulFunction(GreetingsFn.SPEC);
+    functions.withStatefulFunction(StockFn.SPEC);
 
     final RequestReplyHandler requestReplyHandler = functions.requestReplyHandler();
     final Undertow httpServer =

@@ -53,6 +53,7 @@ final class UserFn implements StatefulFunction {
 
   @Override
   public CompletableFuture<Void> apply(Context context, Message message) {
+    System.out.println("UserFn Called (sout)");
     if (message.is(USER_LOGIN_JSON_TYPE)) {
       final UserLogin login = message.as(USER_LOGIN_JSON_TYPE);
 
