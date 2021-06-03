@@ -31,6 +31,24 @@ public final class Types {
           JSON_OBJ_MAPPER::writeValueAsBytes,
           bytes -> JSON_OBJ_MAPPER.readValue(bytes, StockFind.class));
 
+  public static final Type<StockSubtract> STOCK_SUBTRACT_JSON_TYPE =
+      SimpleType.simpleImmutableTypeFrom(
+          TypeName.typeNameOf(TYPES_NAMESPACE, StockSubtract.class.getName()),
+          JSON_OBJ_MAPPER::writeValueAsBytes,
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, StockSubtract.class));
+
+  public static final Type<StockAdd> STOCK_ADD_JSON_TYPE =
+      SimpleType.simpleImmutableTypeFrom(
+          TypeName.typeNameOf(TYPES_NAMESPACE, StockAdd.class.getName()),
+          JSON_OBJ_MAPPER::writeValueAsBytes,
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, StockAdd.class));
+
+  public static final Type<StockItemCreate> STOCK_ITEM_CREATE_JSON_TYPE =
+      SimpleType.simpleImmutableTypeFrom(
+          TypeName.typeNameOf(TYPES_NAMESPACE, StockItemCreate.class.getName()),
+          JSON_OBJ_MAPPER::writeValueAsBytes,
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, StockItemCreate.class));
+
 
 
 }

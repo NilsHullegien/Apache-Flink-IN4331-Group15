@@ -33,12 +33,27 @@ module:
             id: greeter.io/user-logins
           spec:
             address: kafka:9092
+            deliverySemantic:
+              type: exactly-once
+              transactionTimeoutMillis: 10000
             consumerGroupId: greeter
             startupPosition:
               type: earliest
             topics:
-              - topic: user-logins
+              - topic: stock-find
                 valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.StockFind
+                targets:
+                  - greeter.fns/stock
+              - topic: stock-subtract
+                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.StockSubtract
+                targets:
+                  - greeter.fns/stock
+              - topic: stock-add
+                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.StockAdd
+                targets:
+                  - greeter.fns/stock
+              - topic: stock-item-create
+                valueType: greeter.types/org.apache.flink.statefun.playground.java.greetunioner.types.StockItemCreate
                 targets:
                   - greeter.fns/stock
     egresses:
@@ -49,4 +64,5 @@ module:
           spec:
             address: kafka:9092
             deliverySemantic:
-              type: at-least-once
+              type: exactly-once
+              transactionTimeoutMillis: 10000

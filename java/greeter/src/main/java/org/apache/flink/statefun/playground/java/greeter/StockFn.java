@@ -20,6 +20,7 @@ package org.apache.flink.statefun.playground.java.greeter;
 
 import java.util.concurrent.CompletableFuture;
 
+import org.apache.flink.statefun.playground.java.greeter.types.StockAdd;
 import org.apache.flink.statefun.playground.java.greeter.types.StockFind;
 import org.apache.flink.statefun.playground.java.greeter.types.generated.UserProfile;
 import org.apache.flink.statefun.sdk.java.*;
@@ -35,19 +36,22 @@ import static org.apache.flink.statefun.playground.java.greeter.types.Types.*;
  */
 final class StockFn implements StatefulFunction {
 
-	static final TypeName TYPENAME = TypeName.typeNameOf("greeter.fns", "stock");
-	static final StatefulFunctionSpec SPEC =
-		StatefulFunctionSpec.builder(TYPENAME).withSupplier(StockFn::new).build();
-
 	private static final ValueSpec<Integer> STOCK_COUNT = ValueSpec.named("stock_count").withIntType();
 	private static final ValueSpec<Integer> STOCK_COUNT2 = ValueSpec.named("stock_count2").withIntType();
+
+	static final TypeName TYPENAME = TypeName.typeNameOf("greeter.fns", "stock");
+	static final StatefulFunctionSpec SPEC =
+		StatefulFunctionSpec.builder(TYPENAME)
+			.withValueSpecs(STOCK_COUNT, STOCK_COUNT2)
+			.withSupplier(StockFn::new)
+			.build();
 
 	private static final TypeName KAFKA_EGRESS = TypeName.typeNameOf("stock-namespace", "stock");
 
 	@Override
 	public CompletableFuture<Void> apply(Context context, Message message) {
-		System.out.println("APPLY REACHED");
 		if (message.is(STOCK_FIND_JSON_TYPE)) {
+			System.out.println("Apply Find");
 			final StockFind stockFindMessage = message.as(STOCK_FIND_JSON_TYPE);
 			int itemId = stockFindMessage.getItemId();
 
@@ -58,15 +62,44 @@ final class StockFn implements StatefulFunction {
 				return_stock = context.storage().get(STOCK_COUNT2).orElse(-2);
 			}
 
-			System.out.printf("FIND ITEM ID: %d%n", itemId);
+			System.out.printf("FIND ITEM ID: %d, STOCK: %d%n", itemId, return_stock);
 
-			context.send(
-				KafkaEgressMessage.forEgress(KAFKA_EGRESS)
-					.withTopic("stock_egress_topic")
-					.withUtf8Key("STOCK")
-					.withUtf8Value(String.valueOf(return_stock))
-					.build());
+//			context.send(
+//				KafkaEgressMessage.forEgress(KAFKA_EGRESS)
+//					.withTopic("stock_egress_topic")
+//					.withUtf8Key("STOCK")
+//					.withUtf8Value(String.valueOf(return_stock))
+//					.build());
+		} else if (message.is(STOCK_SUBTRACT_JSON_TYPE)) {
+			System.out.println("Apply Subtract");
+
+		} else if (message.is(STOCK_ADD_JSON_TYPE)) {
+			System.out.println("Apply Add");
+
+			final StockAdd stockAddMessage = message.as(STOCK_ADD_JSON_TYPE);
+			int itemId = stockAddMessage.getItemId();
+			int itemNumber = stockAddMessage.getNumber();
+			System.out.println("ItemID: " + itemId + ", itemNumber: " + itemNumber);
+
+			if (itemId == 1) {
+				int stock_count = context.storage().get(STOCK_COUNT).orElse(0);
+				stock_count += itemNumber;
+				context.storage().set(STOCK_COUNT, stock_count);
+				System.out.println("ItemId " + itemId + " now has stock: " + stock_count);
+			} else if (itemId == 2) {
+				int stock_count = context.storage().get(STOCK_COUNT2).orElse(0);
+				stock_count += itemNumber;
+				context.storage().set(STOCK_COUNT, stock_count);
+				System.out.println("ItemId " + itemId + " now has stock: " + stock_count);
+			}
+
+		} else if (message.is(STOCK_ITEM_CREATE_JSON_TYPE)) {
+			System.out.println("Apply Item Create");
+
+		} else {
+			throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
 		}
+
 		return context.done();
 	}
 }
