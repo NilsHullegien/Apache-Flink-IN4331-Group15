@@ -18,17 +18,16 @@
 
 package org.apache.flink.statefun.playground.java.greeter;
 
-import static org.apache.flink.statefun.playground.java.greeter.types.Types.STOCK_FIND_PROTOBUF_TYPE;
-import static org.apache.flink.statefun.playground.java.greeter.types.Types.USER_PROFILE_PROTOBUF_TYPE;
-
 import java.util.concurrent.CompletableFuture;
 
-import org.apache.flink.statefun.playground.java.greeter.types.generated.StockFind;
+import org.apache.flink.statefun.playground.java.greeter.types.StockFind;
 import org.apache.flink.statefun.playground.java.greeter.types.generated.UserProfile;
 import org.apache.flink.statefun.sdk.java.*;
 import org.apache.flink.statefun.sdk.java.io.KafkaEgressMessage;
 import org.apache.flink.statefun.sdk.java.message.Message;
 import org.apache.flink.statefun.sdk.java.message.MessageBuilder;
+
+import static org.apache.flink.statefun.playground.java.greeter.types.Types.*;
 
 /**
  * A simple function that computes personalized greetings messages based on a given {@link
@@ -36,7 +35,7 @@ import org.apache.flink.statefun.sdk.java.message.MessageBuilder;
  */
 final class StockFn implements StatefulFunction {
 
-	static final TypeName TYPENAME = TypeName.typeNameOf("stock.fns", "stock");
+	static final TypeName TYPENAME = TypeName.typeNameOf("greeter.fns", "stock");
 	static final StatefulFunctionSpec SPEC =
 		StatefulFunctionSpec.builder(TYPENAME).withSupplier(StockFn::new).build();
 
@@ -48,8 +47,8 @@ final class StockFn implements StatefulFunction {
 	@Override
 	public CompletableFuture<Void> apply(Context context, Message message) {
 		System.out.println("APPLY REACHED");
-		if (message.is(STOCK_FIND_PROTOBUF_TYPE)) {
-			final StockFind stockFindMessage = message.as(STOCK_FIND_PROTOBUF_TYPE);
+		if (message.is(STOCK_FIND_JSON_TYPE)) {
+			final StockFind stockFindMessage = message.as(STOCK_FIND_JSON_TYPE);
 			int itemId = stockFindMessage.getItemId();
 
 			int return_stock = -42;

@@ -38,9 +38,9 @@ module:
               type: earliest
             topics:
               - topic: user-logins
-                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.UserLogin
+                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.StockFind
                 targets:
-                  - greeter.fns/user
+                  - greeter.fns/stock
     egresses:
       - egress:
           meta:

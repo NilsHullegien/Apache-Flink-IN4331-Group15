@@ -94,17 +94,17 @@ services:
   #    Simple Kafka JSON producer to simulate ingress events
   ###############################################################
 
-  user-logins-producer:
-    image: ververica/statefun-playground-producer:latest
-    depends_on:
-      - kafka
-      - statefun-worker
-    links:
-      - "kafka:kafka"
-    environment:
-      APP_PATH: /mnt/user-logins.txt
-      APP_KAFKA_HOST: kafka:9092
-      APP_KAFKA_TOPIC: user-logins
-      APP_JSON_PATH: user_id
-    volumes:
-      - ./user-logins.txt:/mnt/user-logins.txt
+#  user-logins-producer:
+#    image: ververica/statefun-playground-producer:latest
+#    depends_on:
+#      - kafka
+#      - statefun-worker
+#    links:
+#      - "kafka:kafka"
+#    environment:
+#      APP_PATH: /mnt/user-logins.txt
+#      APP_KAFKA_HOST: kafka:9092
+#      APP_KAFKA_TOPIC: user-logins
+#      APP_JSON_PATH: user_id
+#    volumes:
+#      - ./user-logins.txt:/mnt/user-logins.txt

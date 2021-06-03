@@ -1,7 +1,6 @@
 package org.apache.flink.statefun.playground.java.greeter.types;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.flink.statefun.playground.java.greeter.types.generated.StockFind;
 import org.apache.flink.statefun.playground.java.greeter.types.generated.UserProfile;
 import org.apache.flink.statefun.sdk.java.TypeName;
 import org.apache.flink.statefun.sdk.java.types.SimpleType;
@@ -26,11 +25,11 @@ public final class Types {
           UserProfile::toByteArray,
           UserProfile::parseFrom);
 
-  public static final Type<StockFind> STOCK_FIND_PROTOBUF_TYPE =
+  public static final Type<StockFind> STOCK_FIND_JSON_TYPE =
       SimpleType.simpleImmutableTypeFrom(
-          TypeName.typeNameOf(TYPES_NAMESPACE, StockFind.getDescriptor().getFullName()),
-          StockFind::toByteArray,
-          StockFind::parseFrom);
+          TypeName.typeNameOf(TYPES_NAMESPACE, StockFind.class.getName()),
+          JSON_OBJ_MAPPER::writeValueAsBytes,
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, StockFind.class));
 
 
 
