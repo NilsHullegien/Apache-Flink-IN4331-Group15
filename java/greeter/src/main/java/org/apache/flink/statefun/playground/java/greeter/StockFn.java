@@ -89,7 +89,7 @@ final class StockFn implements StatefulFunction {
 			} else if (itemId == 2) {
 				int stock_count = context.storage().get(STOCK_COUNT2).orElse(0);
 				stock_count += itemNumber;
-				context.storage().set(STOCK_COUNT, stock_count);
+				context.storage().set(STOCK_COUNT2, stock_count);
 				System.out.println("ItemId " + itemId + " now has stock: " + stock_count);
 			}
 

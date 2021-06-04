@@ -23,7 +23,7 @@ ingress_topic="stock-find" # StockFn
 send_to_kafka $key $json $ingress_topic
 
 # 2)
-key="2"
+key="1"
 json=$(cat <<JSON
  {"item_id":"1","number_add":"10"}
 JSON
@@ -32,7 +32,7 @@ ingress_topic="stock-add" # StockFn
 send_to_kafka $key $json $ingress_topic
 
 # 3)
-key="3"
+key="1"
 json=$(cat <<JSON
  {"item_id":"1"}
 JSON
@@ -42,7 +42,7 @@ ingress_topic="stock-find" # StockFn
 send_to_kafka $key $json $ingress_topic
 
 # 4)
-key="4"
+key="1"
 json=$(cat <<JSON
  {"item_id":"1","number_add":"3"}
 JSON
@@ -51,7 +51,7 @@ ingress_topic="stock-add" # StockFn
 send_to_kafka $key $json $ingress_topic
 
 # 5)
-key="5"
+key="1"
 json=$(cat <<JSON
  {"item_id":"1"}
 JSON
@@ -60,7 +60,7 @@ ingress_topic="stock-find" # StockFn
 send_to_kafka $key $json $ingress_topic
 
 # 6)
-key="6"
+key="1"
 json=$(cat <<JSON
  {"item_id":"2"}
 JSON
