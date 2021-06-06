@@ -47,14 +47,12 @@ import static org.apache.flink.statefun.playground.java.greeter.types.Types.*;
  */
 final class StockFn implements StatefulFunction {
 
-    private static final ValueSpec<Integer> STOCK_COUNT = ValueSpec.named("stock_count").withIntType();
-    private static final ValueSpec<Integer> STOCK_COUNT2 = ValueSpec.named("stock_count2").withIntType();
-    private static final ValueSpec<Stockroom> STOCKROOM = ValueSpec.named("stockroom").withCustomType(Stockroom.TYPE);
+    private static final ValueSpec<Product> PRODUCT = ValueSpec.named("product").withCustomType(Product.TYPE);
 
     static final TypeName TYPENAME = TypeName.typeNameOf("greeter.fns", "stock");
     static final StatefulFunctionSpec SPEC =
             StatefulFunctionSpec.builder(TYPENAME)
-                    .withValueSpecs(STOCK_COUNT, STOCK_COUNT2, STOCKROOM)
+                    .withValueSpecs(PRODUCT)
                     .withSupplier(StockFn::new)
                     .build();
 
@@ -67,67 +65,52 @@ final class StockFn implements StatefulFunction {
 
             final StockFind stockFindMessage = message.as(STOCK_FIND_JSON_TYPE);
 
-            Stockroom stockroom = context.storage().get(STOCKROOM).orElse(Stockroom.initEmpty());
-            System.out.println("ItemID: " + stockFindMessage.getItemId() + ", Quantity: " + stockroom.getStockroom().get(stockFindMessage.getItemId()).quantity);
-
-//			int itemId = stockFindMessage.getItemId();
-//
-//			int return_stock = -42;
-//			if (itemId == 1) {
-//				return_stock = context.storage().get(STOCK_COUNT).orElse(-1);
-//			} else if (itemId == 2) {
-//				return_stock = context.storage().get(STOCK_COUNT2).orElse(-2);
-//			}
-//
-//			System.out.printf("FIND ITEM ID: %d, STOCK: %d%n", itemId, return_stock);
+            Product product = null;
+            try {
+                product = context.storage().get(PRODUCT).orElseThrow(() -> new Exception("ALLES KAPOT"));
+            } catch (Exception e) {
+                //TODO Return error
+                e.printStackTrace();
+            }
+            System.out.println("Price: " + product.price + ", Quantity: " + product.quantity);
 
         } else if (message.is(STOCK_SUBTRACT_JSON_TYPE)) {
             System.out.println("SUBTRACTING");
 
             final StockSubtract stockSubtractMessage = message.as(STOCK_SUBTRACT_JSON_TYPE);
-            System.out.println(stockSubtractMessage
-            );
 
-            Stockroom stockroom = context.storage().get(STOCKROOM).orElse(Stockroom.initEmpty());
-            stockroom.add(stockSubtractMessage.getItemId(), -stockSubtractMessage.getNumber()); // minus
+            Product product = null;
+            try {
+                product = context.storage().get(PRODUCT).orElseThrow(() -> new Exception("Subtract KAPOT"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            product.subtract(stockSubtractMessage.getNumber());
 
-            context.storage().set(STOCKROOM, stockroom);
+            context.storage().set(PRODUCT, product);
 
         } else if (message.is(STOCK_ADD_JSON_TYPE)) {
             System.out.println("Apply Add");
 
             final StockAdd stockAddMessage = message.as(STOCK_ADD_JSON_TYPE);
 
-//			int itemId = stockAddMessage.getItemId();
-//			int itemNumber = stockAddMessage.getNumber();
-//			System.out.println("ItemID: " + itemId + ", itemNumber: " + itemNumber);
-//
-//			if (itemId == 1) {
-//				int stock_count = context.storage().get(STOCK_COUNT).orElse(0);
-//				stock_count += itemNumber;
-//				context.storage().set(STOCK_COUNT, stock_count);
-//				System.out.println("ItemId " + itemId + " now has stock: " + stock_count);
-//			} else if (itemId == 2) {
-//				int stock_count = context.storage().get(STOCK_COUNT2).orElse(0);
-//				stock_count += itemNumber;
-//				context.storage().set(STOCK_COUNT2, stock_count);
-//				System.out.println("ItemId " + itemId + " now has stock: " + stock_count);
-//			}
+            Product product = null;
+            try {
+                product = context.storage().get(PRODUCT).orElseThrow(() -> new Exception("Add KAPOT"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            product.add(stockAddMessage.getNumber());
 
-            Stockroom stockroom = context.storage().get(STOCKROOM).orElse(Stockroom.initEmpty());
-            stockroom.add(stockAddMessage.getItemId(), stockAddMessage.getNumber());
-
-            context.storage().set(STOCKROOM, stockroom);
+            context.storage().set(PRODUCT, product);
 
         } else if (message.is(STOCK_ITEM_CREATE_JSON_TYPE)) {
             System.out.println("Apply Item Create");
 
             final StockItemCreate stockItemCreateMessage = message.as(STOCK_ITEM_CREATE_JSON_TYPE);
-
-            Stockroom stockroom = context.storage().get(STOCKROOM).orElse(Stockroom.initEmpty());
-            stockroom.create(stockItemCreateMessage.getPrice());
-
-            context.storage().set(STOCKROOM, stockroom);
+            if (!context.storage().get(PRODUCT).isPresent()) {
+                context.storage().set(PRODUCT, new Product(stockItemCreateMessage.getPrice(), 0));
+            }
         } else {
             throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
         }
@@ -135,35 +118,30 @@ final class StockFn implements StatefulFunction {
         return context.done();
     }
 
-    private static class Stockroom {
+    private static class Product {
 
         private static final ObjectMapper mapper = new ObjectMapper();
 
-        public static final Type<Stockroom> TYPE =
+        public static final Type<Product> TYPE =
                 SimpleType.simpleImmutableTypeFrom(
-                        TypeName.typeNameFromString("com.example/Stockroom"),
+                        TypeName.typeNameFromString("com.example/Product"),
                         mapper::writeValueAsBytes,
-                        bytes -> mapper.readValue(bytes, Stockroom.class));
+                        bytes -> mapper.readValue(bytes, Product.class));
 
-        @JsonProperty("stockroom")
-        private final ArrayList<Product> stockroom;
+        @JsonProperty("price")
+        private final int price;
 
-        public static Stockroom initEmpty() {
-            return new Stockroom(new ArrayList<>());
-        }
+        @JsonProperty("quantity")
+        private int quantity;
 
         @JsonCreator
-        public Stockroom(@JsonProperty("stockroom") ArrayList<Product> stockroom) {
-            this.stockroom = stockroom;
+        public Product(@JsonProperty("price") int price, @JsonProperty("quantity") Integer quantity) {
+            this.price = price;
+            this.quantity = quantity;
         }
 
-        public int create(int price) {
-            stockroom.add(new Product(price, 0));
-            return stockroom.size() - 1;
-        }
-
-        public void add(int itemId, int quantity) {
-            stockroom.get(itemId).addQuantity(quantity);
+        public void add(int quantity) {
+            this.quantity += quantity;
         }
 
         @JsonProperty("basket")
@@ -179,33 +157,18 @@ final class StockFn implements StatefulFunction {
 
         @Override
         public String toString() {
-            return "Basket{" + "basket=" + stockroom + '}';
-        }
-    }
-
-    private static class Product {
-        private int price;
-        private int quantity;
-
-        public Product(int price, int quantity) {
-            this.price = price;
-            this.quantity = quantity;
-        }
-
-        public Product() {
-
+            return "Product{" +
+                    "price=" + price +
+                    ", quantity=" + quantity +
+                    '}';
         }
 
         public int getPrice() {
-            return this.price;
+            return price;
         }
 
         public int getQuantity() {
-            return this.quantity;
-        }
-
-        public void addQuantity(int n) {
-            this.quantity += n;
+            return quantity;
         }
     }
 }
