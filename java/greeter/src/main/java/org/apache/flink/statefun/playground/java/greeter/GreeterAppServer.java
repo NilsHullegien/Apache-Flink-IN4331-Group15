@@ -18,6 +18,7 @@
 
 package org.apache.flink.statefun.playground.java.greeter;
 
+import com.sun.org.apache.xpath.internal.operations.Or;
 import io.undertow.Undertow;
 import org.apache.flink.statefun.playground.java.greeter.undertow.UndertowHttpHandler;
 import org.apache.flink.statefun.sdk.java.StatefulFunctions;
@@ -38,6 +39,7 @@ public final class GreeterAppServer {
     functions.withStatefulFunction(UserFn.SPEC);
     functions.withStatefulFunction(GreetingsFn.SPEC);
     functions.withStatefulFunction(StockFn.SPEC);
+    functions.withStatefulFunction(OrderFn.SPEC);
 
     final RequestReplyHandler requestReplyHandler = functions.requestReplyHandler();
     final Undertow httpServer =
