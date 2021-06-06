@@ -1,4 +1,4 @@
-package org.apache.flink.statefun.playground.java.greeter.types;
+package org.apache.flink.statefun.playground.java.greeter.types.Stock;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

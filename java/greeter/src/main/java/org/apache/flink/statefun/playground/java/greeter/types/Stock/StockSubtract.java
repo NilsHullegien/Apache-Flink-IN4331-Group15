@@ -1,15 +1,15 @@
-package org.apache.flink.statefun.playground.java.greeter.types;
+package org.apache.flink.statefun.playground.java.greeter.types.Stock;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public final class StockAdd {
+public final class StockSubtract {
 	@JsonProperty("item_id")
 	private Integer itemId;
 
-	@JsonProperty("number_add")
+	@JsonProperty("number_subtract")
 	private Integer number;
 
-	public StockAdd() {}
+	public StockSubtract() {}
 
 	public Integer getItemId() {
 		return itemId;
