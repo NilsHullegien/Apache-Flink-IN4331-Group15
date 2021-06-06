@@ -144,15 +144,8 @@ final class StockFn implements StatefulFunction {
             this.quantity += quantity;
         }
 
-        @JsonProperty("basket")
-        public ArrayList<Product> getStockroom() {
-            return stockroom;
-        }
-
-        ;
-
-        public void clear() {
-            stockroom.clear();
+        public void subtract(int quantity) {
+            this.quantity -= quantity;
         }
 
         @Override
