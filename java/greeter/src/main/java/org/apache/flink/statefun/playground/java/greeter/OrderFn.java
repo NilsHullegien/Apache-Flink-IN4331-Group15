@@ -132,7 +132,13 @@ final class OrderFn implements StatefulFunction {
             Filing_Cabinet filing_cabinet = context.storage().get(FILING_CABINET).orElse(Filing_Cabinet.initEmpty());
             int order_id = orderCheckoutMessage.getOrderId();
 
-            // TODO: SEND INTERNAL MESSAGE
+            for (Map.Entry<Integer, Integer> item : filing_cabinet.getFiling_cabinet().get(order_id).items.entrySet()) {
+                final StockSubtract internalSubtractMessage = new StockSubtract(item.getKey(), item.getValue());
+                context.send(
+                        MessageBuilder.forAddress(StockFn.TYPENAME, "1")
+                                .withCustomType(STOCK_SUBTRACT_JSON_TYPE, internalSubtractMessage)
+                                .build());
+            }
         }
 //        if (message.is(STOCK_FIND_JSON_TYPE)) {
 //            System.out.println("Apply Find");

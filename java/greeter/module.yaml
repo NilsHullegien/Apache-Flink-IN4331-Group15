@@ -56,13 +56,23 @@ module:
                 valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Stock.StockItemCreate
                 targets:
                   - greeter.fns/stock
-
-#            ORDER
-
+      - ingress:
+          meta:
+            type: io.statefun.kafka/ingress
+            id: greeter.io/order
+          spec:
+            address: kafka:9092
+            deliverySemantic:
+              type: exactly-once
+              transactionTimeoutMillis: 10000
+            consumerGroupId: greeter
+            startupPosition:
+              type: earliest
+            topics:
               - topic: order-add-item
-                  valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Order.OrderAddItem
-                  targets:
-                    - greeter.fns/order
+                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Order.OrderAddItem
+                targets:
+                  - greeter.fns/order
               - topic: order-checkout
                 valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Order.OrderCheckout
                 targets:
