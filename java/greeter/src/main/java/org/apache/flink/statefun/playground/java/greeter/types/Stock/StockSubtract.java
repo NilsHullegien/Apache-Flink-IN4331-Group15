@@ -11,6 +11,11 @@ public final class StockSubtract {
 
 	public StockSubtract() {}
 
+	public StockSubtract(Integer itemId, Integer number) {
+		this.itemId = itemId;
+		this.number = number;
+	}
+
 	public Integer getItemId() {
 		return itemId;
 	}

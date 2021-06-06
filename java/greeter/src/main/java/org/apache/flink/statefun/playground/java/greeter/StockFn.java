@@ -82,12 +82,14 @@ final class StockFn implements StatefulFunction {
 //			System.out.printf("FIND ITEM ID: %d, STOCK: %d%n", itemId, return_stock);
 
         } else if (message.is(STOCK_SUBTRACT_JSON_TYPE)) {
-            System.out.println("Apply Subtract");
+            System.out.println("SUBTRACTING");
 
-            final StockSubtract stockSubtractmessage = message.as(STOCK_SUBTRACT_JSON_TYPE);
+            final StockSubtract stockSubtractMessage = message.as(STOCK_SUBTRACT_JSON_TYPE);
+            System.out.println(stockSubtractMessage
+            );
 
             Stockroom stockroom = context.storage().get(STOCKROOM).orElse(Stockroom.initEmpty());
-            stockroom.add(stockSubtractmessage.getItemId(), -stockSubtractmessage.getNumber()); // minus
+            stockroom.add(stockSubtractMessage.getItemId(), -stockSubtractMessage.getNumber()); // minus
 
             context.storage().set(STOCKROOM, stockroom);
 

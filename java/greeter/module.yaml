@@ -39,9 +39,7 @@ module:
             consumerGroupId: greeter
             startupPosition:
               type: earliest
-
             topics:
-#             STOCK
               - topic: stock-find
                 valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Stock.StockFind
                 targets:
@@ -70,9 +68,9 @@ module:
                 targets:
                   - greeter.fns/order
               - topic: order-delete
-                  valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Order.OrderDelete
-                  targets:
-                    - greeter.fns/order
+                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Order.OrderDelete
+                targets:
+                  - greeter.fns/order
               - topic: order-create
                 valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Order.OrderCreate
                 targets:
