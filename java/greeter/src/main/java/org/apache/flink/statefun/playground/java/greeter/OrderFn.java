@@ -29,6 +29,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.statefun.playground.java.greeter.types.Order.*;
+import org.apache.flink.statefun.playground.java.greeter.types.Internal.*;
+import org.apache.flink.statefun.playground.java.greeter.types.Stock.StockAdd;
+import org.apache.flink.statefun.playground.java.greeter.types.Stock.StockItemCreate;
 import org.apache.flink.statefun.playground.java.greeter.types.Stock.StockSubtract;
 import org.apache.flink.statefun.playground.java.greeter.types.generated.UserProfile;
 import org.apache.flink.statefun.sdk.java.*;
@@ -46,12 +49,14 @@ import static org.apache.flink.statefun.playground.java.greeter.types.Types.*;
  */
 final class OrderFn implements StatefulFunction {
 
-    private static final ValueSpec<Filing_Cabinet> FILING_CABINET = ValueSpec.named("filing_cabinet").withCustomType(Filing_Cabinet.TYPE);
+    private static final ValueSpec<Order> ORDER = ValueSpec.named("order").withCustomType(Order.TYPE);
+    private static final ValueSpec<Integer> STOCK_POLL_OUT = ValueSpec.named("stock_poll_out").withIntType();
+    private static final ValueSpec<Boolean> RESTOCK_SENT = ValueSpec.named("restock_sent").withBooleanType();
 
     static final TypeName TYPENAME = TypeName.typeNameOf("greeter.fns", "order");
     static final StatefulFunctionSpec SPEC =
             StatefulFunctionSpec.builder(TYPENAME)
-                    .withValueSpecs(FILING_CABINET)
+                    .withValueSpecs(ORDER, STOCK_POLL_OUT, RESTOCK_SENT)
                     .withSupplier(OrderFn::new)
                     .build();
 
@@ -59,154 +64,121 @@ final class OrderFn implements StatefulFunction {
 
     @Override
     public CompletableFuture<Void> apply(Context context, Message message) {
-        if (message.is(ORDER_CREATE_JSON_TYPE)) {
-            System.out.println("Order Create");
+        System.out.println("IN CHECKOUT MODE: " + inCheckoutMode(context));
+        if (!inCheckoutMode(context)) { //Accept external messages
 
-            final OrderCreate orderCreateMessage = message.as(ORDER_CREATE_JSON_TYPE);
+            if (message.is(ORDER_CREATE_JSON_TYPE)) {
+                System.out.println("Order Create");
 
-            Filing_Cabinet filing_cabinet = context.storage().get(FILING_CABINET).orElse(Filing_Cabinet.initEmpty());
-            int user_id = orderCreateMessage.getUserId();
+                final OrderCreate orderCreateMessage = message.as(ORDER_CREATE_JSON_TYPE);
+                if (!context.storage().get(ORDER).isPresent()) {
+                    context.storage().set(ORDER, new Order(orderCreateMessage.getUserId()));
+                }
 
-            int order_id = filing_cabinet.create(user_id);
+            } else if (message.is(ORDER_DELETE_JSON_TYPE)) {
+                System.out.println("Order Remove");
 
-            context.storage().set(FILING_CABINET, filing_cabinet);
+                final OrderDelete orderDeleteMessage = message.as(ORDER_DELETE_JSON_TYPE);
 
-            System.out.println("Order id created is: " + order_id);
-        } else if (message.is(ORDER_DELETE_JSON_TYPE)) {
-            System.out.println("Order Remove");
+                Order order = getOrderFromMessage(context);
+                order.delete();
 
-            final OrderDelete orderDeleteMessage = message.as(ORDER_DELETE_JSON_TYPE);
+                context.storage().set(ORDER, order);
 
-            Filing_Cabinet filing_cabinet = context.storage().get(FILING_CABINET).orElse(Filing_Cabinet.initEmpty());
-            int order_id = orderDeleteMessage.getOrderId();
+            } else if (message.is(ORDER_FIND_JSON_TYPE)) {
+                System.out.println("Find Order");
 
-            filing_cabinet.delete(order_id);
+                final OrderFind orderFindMessage = message.as(ORDER_FIND_JSON_TYPE);
 
-            context.storage().set(FILING_CABINET, filing_cabinet);
+                Order order = getOrderFromMessage(context);
+                System.out.println(order.toString());
 
-            System.out.println("Order id deleted is: " + order_id);
-        } else if (message.is(ORDER_FIND_JSON_TYPE)) {
-            System.out.println("Find Order");
 
-            final OrderFind orderFindMessage = message.as(ORDER_FIND_JSON_TYPE);
+            } else if (message.is(ORDER_ADD_ITEM_JSON_TYPE)) {
+                System.out.println("Add Item Order");
 
-            Filing_Cabinet filing_cabinet = context.storage().get(FILING_CABINET).orElse(Filing_Cabinet.initEmpty());
-            int order_id = orderFindMessage.getOrderId();
+                final OrderAddItem orderAddItemMessage = message.as(ORDER_ADD_ITEM_JSON_TYPE);
 
-            Order order = filing_cabinet.getFiling_cabinet().get(order_id);
+                Order order = getOrderFromMessage(context);
 
-            System.out.println("Order id found: " + order_id + ", user_id: " + order.user_id + ", items: " + order.items);
-        } else if (message.is(ORDER_ADD_ITEM_JSON_TYPE)) {
-            System.out.println("Add Item Order");
+                order.add(orderAddItemMessage.getItemId());
 
-            final OrderAddItem orderAddItemMessage = message.as(ORDER_ADD_ITEM_JSON_TYPE);
+                context.storage().set(ORDER, order);
 
-            Filing_Cabinet filing_cabinet = context.storage().get(FILING_CABINET).orElse(Filing_Cabinet.initEmpty());
-            int order_id = orderAddItemMessage.getOrderId();
-            int item_id = orderAddItemMessage.getItemId();
+            } else if (message.is(ORDER_REMOVE_ITEM_JSON_TYPE)) {
+                System.out.println("Remove Item Order");
 
-            filing_cabinet.add(order_id, item_id);
+                final OrderRemoveItem orderRemoveItemMessage = message.as(ORDER_REMOVE_ITEM_JSON_TYPE);
 
-            context.storage().set(FILING_CABINET, filing_cabinet);
+                Order order = getOrderFromMessage(context);
 
-            System.out.println("Order: " + order_id + ", item added: " + item_id);
-        } else if (message.is(ORDER_REMOVE_ITEM_JSON_TYPE)) {
-            System.out.println("Remove Item Order");
+                order.remove(orderRemoveItemMessage.getItemId());
 
-            final OrderRemoveItem orderRemoveItemMessage = message.as(ORDER_REMOVE_ITEM_JSON_TYPE);
+                context.storage().set(ORDER, order);
 
-            Filing_Cabinet filing_cabinet = context.storage().get(FILING_CABINET).orElse(Filing_Cabinet.initEmpty());
-            int order_id = orderRemoveItemMessage.getOrderId();
-            int item_id = orderRemoveItemMessage.getItemId();
+            } else if (message.is(ORDER_CHECKOUT_JSON_TYPE)) {
+                System.out.println("Checkout Order");
 
-            filing_cabinet.remove(order_id, item_id);
+                int stock_poll_out = context.storage().get(STOCK_POLL_OUT).orElse(0);
 
-            context.storage().set(FILING_CABINET, filing_cabinet);
+                if (stock_poll_out == 0) {
+                    final OrderCheckout orderCheckoutMessage = message.as(ORDER_CHECKOUT_JSON_TYPE);
 
-            System.out.println("Order: " + order_id + ", item removed: " + item_id);
-        } else if (message.is(ORDER_CHECKOUT_JSON_TYPE)) {
-            System.out.println("Checkout Order");
+                    Order order = getOrderFromMessage(context);
 
-            final OrderCheckout orderCheckoutMessage = message.as(ORDER_CHECKOUT_JSON_TYPE);
+                    int order_id = orderCheckoutMessage.getOrderId();
 
-            Filing_Cabinet filing_cabinet = context.storage().get(FILING_CABINET).orElse(Filing_Cabinet.initEmpty());
-            int order_id = orderCheckoutMessage.getOrderId();
+                    stock_poll_out = order.items.size();
 
-            for (Map.Entry<Integer, Integer> item : filing_cabinet.getFiling_cabinet().get(order_id).items.entrySet()) {
-                final StockSubtract internalSubtractMessage = new StockSubtract(item.getKey(), item.getValue());
-                context.send(
-                        MessageBuilder.forAddress(StockFn.TYPENAME, "1")
-                                .withCustomType(STOCK_SUBTRACT_JSON_TYPE, internalSubtractMessage)
-                                .build());
+                    context.storage().set(STOCK_POLL_OUT, stock_poll_out);
+                    context.storage().set(RESTOCK_SENT, false);
+
+                    for (Map.Entry<Integer, Integer> item : order.items.entrySet()) {
+                        final InternalStockSubtract internalSubtractMessage = new InternalStockSubtract(item.getValue());
+                        context.send(
+                                MessageBuilder.forAddress(StockFn.TYPENAME, item.getKey().toString())
+                                        .withCustomType(INTERNAL_STOCK_SUBTRACT, internalSubtractMessage)
+                                        .build());
+                    }
+                } else {
+                    System.out.println("Checkout still waiting for stock callback");
+                }
+            }
+        } else { // IN CHECKOUT MODE
+            if (message.is(INTERNAL_STOCK_CHECKOUT_CALLBACK)) {
+                final InternalStockCheckoutCallback internalMessage = message.as(INTERNAL_STOCK_CHECKOUT_CALLBACK);
+                int stockPollOut = getStockPollOut(context) - 1;
+                context.storage().set(STOCK_POLL_OUT, stockPollOut);
+
+                if (internalMessage.isOk()) {
+                    if (stockPollOut == 0 && !isRestockSent(context)) { //Last message was received, we can stop now
+                        System.out.println("All stock has been approved");
+                        //TODO payment
+
+                        //TODO clear items
+                    }
+                } else { //Error has occured, we need to fix the stock
+                    if (!isRestockSent(context)) {
+                        context.storage().set(RESTOCK_SENT, true);
+
+                        Order order = getOrderFromMessage(context);
+                        //TODO failed to webserver
+
+                        for (Map.Entry<Integer, Integer> item : order.items.entrySet()) {
+                            final StockAdd internalAddMessage = new StockAdd(item.getValue());
+                            context.send(
+                                    MessageBuilder.forAddress(StockFn.TYPENAME, item.getKey().toString())
+                                            .withCustomType(STOCK_ADD_JSON_TYPE, internalAddMessage)
+                                            .build());
+                        }
+                    }
+                }
+
+            } else {
+                throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
             }
         }
-//        if (message.is(STOCK_FIND_JSON_TYPE)) {
-//            System.out.println("Apply Find");
-//
-//            final StockFind stockFindMessage = message.as(STOCK_FIND_JSON_TYPE);
-//
-//            Stockroom stockroom = context.storage().get(FILING_CABINET).orElse(Stockroom.initEmpty());
-//            System.out.println("ItemID: " + stockFindMessage.getItemId() + ", Quantity: " + stockroom.getStockroom().get(stockFindMessage.getItemId()).quantity);
-//
-////			int itemId = stockFindMessage.getItemId();
-////
-////			int return_stock = -42;
-////			if (itemId == 1) {
-////				return_stock = context.storage().get(STOCK_COUNT).orElse(-1);
-////			} else if (itemId == 2) {
-////				return_stock = context.storage().get(STOCK_COUNT2).orElse(-2);
-////			}
-////
-////			System.out.printf("FIND ITEM ID: %d, STOCK: %d%n", itemId, return_stock);
-//
-//        } else if (message.is(STOCK_SUBTRACT_JSON_TYPE)) {
-//            System.out.println("Apply Subtract");
-//
-//            final StockSubtract stockSubtractmessage = message.as(STOCK_SUBTRACT_JSON_TYPE);
-//
-//            Stockroom stockroom = context.storage().get(FILING_CABINET).orElse(Stockroom.initEmpty());
-//            stockroom.add(stockSubtractmessage.getItemId(), - stockSubtractmessage.getNumber()); // minus
-//
-//            context.storage().set(FILING_CABINET, stockroom);
-//
-//        } else if (message.is(STOCK_ADD_JSON_TYPE)) {
-//            System.out.println("Apply Add");
-//
-//            final StockAdd stockAddMessage = message.as(STOCK_ADD_JSON_TYPE);
-//
-////			int itemId = stockAddMessage.getItemId();
-////			int itemNumber = stockAddMessage.getNumber();
-////			System.out.println("ItemID: " + itemId + ", itemNumber: " + itemNumber);
-////
-////			if (itemId == 1) {
-////				int stock_count = context.storage().get(STOCK_COUNT).orElse(0);
-////				stock_count += itemNumber;
-////				context.storage().set(STOCK_COUNT, stock_count);
-////				System.out.println("ItemId " + itemId + " now has stock: " + stock_count);
-////			} else if (itemId == 2) {
-////				int stock_count = context.storage().get(STOCK_COUNT2).orElse(0);
-////				stock_count += itemNumber;
-////				context.storage().set(STOCK_COUNT2, stock_count);
-////				System.out.println("ItemId " + itemId + " now has stock: " + stock_count);
-////			}
-//
-//            Stockroom stockroom = context.storage().get(FILING_CABINET).orElse(Stockroom.initEmpty());
-//            stockroom.add(stockAddMessage.getItemId(), stockAddMessage.getNumber());
-//
-//            context.storage().set(STOCKROOM, stockroom);
-//
-//        } else if (message.is(STOCK_ITEM_CREATE_JSON_TYPE)) {
-//            System.out.println("Apply Item Create");
-//
-//            final StockItemCreate stockItemCreateMessage = message.as(STOCK_ITEM_CREATE_JSON_TYPE);
-//
-//            Stockroom stockroom = context.storage().get(STOCKROOM).orElse(Stockroom.initEmpty());
-//            stockroom.create(stockItemCreateMessage.getPrice());
-//
-//            context.storage().set(STOCKROOM, stockroom);
-//        } else {
-//            throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
-//        }
+
 
         return context.done();
     }

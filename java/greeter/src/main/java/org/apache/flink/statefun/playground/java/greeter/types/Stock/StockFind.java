@@ -3,7 +3,7 @@ package org.apache.flink.statefun.playground.java.greeter.types.Stock;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class StockFind {
-	@JsonProperty("item_id")
+	@JsonProperty("stock_find_identifier")
 	private Integer itemId;
 
 	public StockFind() {}
