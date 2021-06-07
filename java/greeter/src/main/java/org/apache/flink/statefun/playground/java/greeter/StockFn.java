@@ -18,22 +18,19 @@
 
 package org.apache.flink.statefun.playground.java.greeter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.flink.statefun.playground.java.greeter.types.Internal.InternalStockCheckoutCallback;
+import org.apache.flink.statefun.playground.java.greeter.types.Internal.InternalStockSubtract;
 import org.apache.flink.statefun.playground.java.greeter.types.Stock.StockAdd;
 import org.apache.flink.statefun.playground.java.greeter.types.Stock.StockFind;
 import org.apache.flink.statefun.playground.java.greeter.types.Stock.StockItemCreate;
 import org.apache.flink.statefun.playground.java.greeter.types.Stock.StockSubtract;
 import org.apache.flink.statefun.playground.java.greeter.types.generated.UserProfile;
 import org.apache.flink.statefun.sdk.java.*;
-import org.apache.flink.statefun.sdk.java.io.KafkaEgressMessage;
 import org.apache.flink.statefun.sdk.java.message.Message;
 import org.apache.flink.statefun.sdk.java.message.MessageBuilder;
 import org.apache.flink.statefun.sdk.java.types.SimpleType;
@@ -65,13 +62,7 @@ final class StockFn implements StatefulFunction {
 
             final StockFind stockFindMessage = message.as(STOCK_FIND_JSON_TYPE);
 
-            Product product = null;
-            try {
-                product = context.storage().get(PRODUCT).orElseThrow(() -> new Exception("ALLES KAPOT"));
-            } catch (Exception e) {
-                //TODO Return error
-                e.printStackTrace();
-            }
+            Product product = getProductFromMessage(context);
             System.out.println("Price: " + product.price + ", Quantity: " + product.quantity);
 
         } else if (message.is(STOCK_SUBTRACT_JSON_TYPE)) {
@@ -79,12 +70,7 @@ final class StockFn implements StatefulFunction {
 
             final StockSubtract stockSubtractMessage = message.as(STOCK_SUBTRACT_JSON_TYPE);
 
-            Product product = null;
-            try {
-                product = context.storage().get(PRODUCT).orElseThrow(() -> new Exception("Subtract KAPOT"));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            Product product = getProductFromMessage(context);
             product.subtract(stockSubtractMessage.getNumber());
 
             context.storage().set(PRODUCT, product);
@@ -94,12 +80,7 @@ final class StockFn implements StatefulFunction {
 
             final StockAdd stockAddMessage = message.as(STOCK_ADD_JSON_TYPE);
 
-            Product product = null;
-            try {
-                product = context.storage().get(PRODUCT).orElseThrow(() -> new Exception("Add KAPOT"));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            Product product = getProductFromMessage(context);
             product.add(stockAddMessage.getNumber());
 
             context.storage().set(PRODUCT, product);
@@ -111,11 +92,47 @@ final class StockFn implements StatefulFunction {
             if (!context.storage().get(PRODUCT).isPresent()) {
                 context.storage().set(PRODUCT, new Product(stockItemCreateMessage.getPrice(), 0));
             }
+        } else if (message.is(INTERNAL_STOCK_SUBTRACT)) {
+            System.out.println("INTERNAL STOCK SUBTRACT");
+            Product product = getProductFromMessage(context);
+            final InternalStockSubtract internalStockSubtractMessage = message.as(INTERNAL_STOCK_SUBTRACT);
+
+            InternalStockCheckoutCallback internalCallbackMessage;
+            //TODO kinda dirty hack but okay for now
+            product.subtract(internalStockSubtractMessage.getNumber());
+            context.storage().set(PRODUCT, product);
+            if (product.getQuantity() >= internalStockSubtractMessage.getNumber()) {
+                internalCallbackMessage = new InternalStockCheckoutCallback(true);
+            } else {
+                internalCallbackMessage = new InternalStockCheckoutCallback(false);
+            }
+
+            Address caller;
+            if (context.caller().isPresent()) {
+                caller = context.caller().get();
+            } else {
+                throw new RuntimeException("CALLER NOT PRESENT");
+            }
+
+            context.send(
+                    MessageBuilder.forAddress(caller)
+                            .withCustomType(INTERNAL_STOCK_CHECKOUT_CALLBACK, internalCallbackMessage)
+                            .build());
         } else {
             throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
         }
 
         return context.done();
+    }
+
+    private Product getProductFromMessage(Context context) {
+        Product product = null;
+        try {
+            product = context.storage().get(PRODUCT).orElseThrow(() -> new Exception("Not initialized"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return product;
     }
 
     private static class Product {

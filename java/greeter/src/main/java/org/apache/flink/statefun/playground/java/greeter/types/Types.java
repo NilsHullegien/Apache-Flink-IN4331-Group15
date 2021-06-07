@@ -3,6 +3,7 @@ package org.apache.flink.statefun.playground.java.greeter.types;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.statefun.playground.java.greeter.types.Order.*;
 import org.apache.flink.statefun.playground.java.greeter.types.Stock.*;
+import org.apache.flink.statefun.playground.java.greeter.types.Internal.*;
 import org.apache.flink.statefun.playground.java.greeter.types.generated.UserProfile;
 import org.apache.flink.statefun.sdk.java.TypeName;
 import org.apache.flink.statefun.sdk.java.types.SimpleType;
@@ -95,5 +96,24 @@ public final class Types {
                   JSON_OBJ_MAPPER::writeValueAsBytes,
                   bytes -> JSON_OBJ_MAPPER.readValue(bytes, OrderRemoveItem.class));
 
+
+    /**
+     * INTERNAL
+     */
+
+    /**
+     * CHECKOUT
+     */
+    public static final Type<InternalStockCheckoutCallback> INTERNAL_STOCK_CHECKOUT_CALLBACK =
+            SimpleType.simpleImmutableTypeFrom(
+                    TypeName.typeNameOf(TYPES_NAMESPACE, InternalStockCheckoutCallback.class.getName()),
+                    JSON_OBJ_MAPPER::writeValueAsBytes,
+                    bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalStockCheckoutCallback.class));
+
+    public static final Type<InternalStockSubtract> INTERNAL_STOCK_SUBTRACT =
+            SimpleType.simpleImmutableTypeFrom(
+                    TypeName.typeNameOf(TYPES_NAMESPACE, InternalStockSubtract.class.getName()),
+                    JSON_OBJ_MAPPER::writeValueAsBytes,
+                    bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalStockSubtract.class));
 
 }

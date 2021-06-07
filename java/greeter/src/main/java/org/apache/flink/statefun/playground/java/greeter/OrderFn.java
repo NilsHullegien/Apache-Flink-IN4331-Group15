@@ -183,97 +183,101 @@ final class OrderFn implements StatefulFunction {
         return context.done();
     }
 
-    private static class Filing_Cabinet {
+    private Order getOrderFromMessage(Context context) {
+        Order order = null;
+        try {
+            order = context.storage().get(ORDER).orElseThrow(() -> new Exception("Order not initialized?"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return order;
+    }
+
+    private Integer getStockPollOut(Context context) {
+        Integer stockPollOut = -1;
+        try {
+            stockPollOut = context.storage().get(STOCK_POLL_OUT).orElse(0);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return stockPollOut;
+    }
+
+    private Boolean isRestockSent(Context context) {
+        Boolean isRestockSent = false;
+        try {
+            isRestockSent = context.storage().get(RESTOCK_SENT).orElseThrow(() -> new Exception("Restock sent does not exist yet"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return isRestockSent;
+    }
+
+    private Boolean inCheckoutMode(Context context) {
+        return getStockPollOut(context) > 0;
+    }
+
+
+
+    private static class Order {
 
         private static final ObjectMapper mapper = new ObjectMapper();
 
-        public static final Type<Filing_Cabinet> TYPE =
+        public static final Type<Order> TYPE =
                 SimpleType.simpleImmutableTypeFrom(
-                        TypeName.typeNameFromString("com.example/Filing_Cabinet"),
+                        TypeName.typeNameFromString("com.example/Order"),
                         mapper::writeValueAsBytes,
-                        bytes -> mapper.readValue(bytes, Filing_Cabinet.class));
+                        bytes -> mapper.readValue(bytes, Order.class));
 
-        @JsonProperty("filing_cabinet")
-        private final ArrayList<Order> filing_cabinet;
 
-        public static Filing_Cabinet initEmpty() {
-            return new Filing_Cabinet(new ArrayList<>());
-        }
+        @JsonProperty("user_id")
+        private final int userId;
 
-        @JsonCreator
-        public Filing_Cabinet(@JsonProperty("filing_cabinet") ArrayList<Order> filing_cabinet) {
-            this.filing_cabinet = filing_cabinet;
-        }
+        @JsonProperty("items")
+        private final HashMap<Integer, Integer> items;
 
-        public int create(int user_id) {
-            filing_cabinet.add(new Order(user_id));
-            return filing_cabinet.size() - 1;
-        }
+        @JsonProperty("paid")
+        private boolean hasPaid;
 
-        public void delete(int order_id) { // TODO: set checks for if null
-            filing_cabinet.set(order_id, null);
-        }
-
-        public void add(int order_id, int item_id) {
-            filing_cabinet.get(order_id).addItem(item_id);
-        }
-
-        public void remove(int order_id, int item_id) {
-            filing_cabinet.get(order_id).removeItem(item_id);
-        }
-
-        @JsonProperty("basket")
-        public ArrayList<Order> getFiling_cabinet(){
-            return filing_cabinet;
-        };
-
-        public void clear() {
-            filing_cabinet.clear();
-        }
+        @JsonProperty("is_deleted")
+        private boolean isDeleted;
 
         @Override
         public String toString() {
-            return "Basket{" + "basket=" + filing_cabinet + '}';
+            return "Order{" +
+                    "userId=" + userId +
+                    ", items=" + items +
+                    ", hasPaid=" + hasPaid +
+                    ", isDeleted=" + isDeleted +
+                    '}';
         }
-    }
 
-    private static class Order {
-        private int user_id;
-        private boolean paid;
-        private HashMap<Integer, Integer> items;
-
-        public Order(int user_id) {
-            this.user_id = user_id;
-            this.paid = false;
+        @JsonCreator
+        public Order(@JsonProperty("user_id") int userId) {
+            this.userId = userId;
+            this.hasPaid = false;
+            this.isDeleted = false;
             this.items = new HashMap<>();
         }
 
-        public Order() {
-
+        public void add(int item_id) {
+            items.put(item_id, items.getOrDefault(item_id, 0) + 1);
         }
 
-        public void addItem(int item_id) { // TODO: If paid = true, dont change order anymore?
-            this.items.put(item_id, this.items.getOrDefault(item_id, 0) + 1);
+        public void remove(int item_id) {
+            items.computeIfPresent(item_id, (k, v) -> v != 0 ? v - 1 : v);
         }
 
-        public void removeItem(int item_id) { // TODO: Safety check for negative values
-            this.items.put(item_id, this.items.getOrDefault(item_id, 0) - 1);
+        public void delete() {
+            this.isDeleted = true;
         }
 
         public void checkOut() {
-            this.paid = true;
-        }
-
-        public int getUser_id() {
-            return user_id;
+            this.hasPaid = true;
         }
 
         public boolean isPaid() {
-            return paid;
-        }
-
-        public HashMap<Integer, Integer> getItems() {
-            return items;
+            return this.hasPaid;
         }
     }
 }
