@@ -31,10 +31,10 @@ public class Controller {
 	private final TaskExecutor exec = new SimpleAsyncTaskExecutor();
 
 	@Autowired
-	private KafkaTemplate<String,String> template;
+	private KafkaTemplate<String,Object> template;
 
 	@Autowired
-	public Controller(KafkaTemplate<String, String> kafkaTemplate) {
+	public Controller(KafkaTemplate<String, Object> kafkaTemplate) {
 		this.template = kafkaTemplate;
 	}
 
@@ -179,7 +179,7 @@ public class Controller {
 	public DeferredResult<ResponseEntity<?>> createStock(@PathVariable Integer price) {
 		System.out.println("--------12-0000000----------");
 		itemId++;
-		this.template.send("stock-item-create", "1", "{\"price\":'" + price + "'}");
+		this.template.send("stock-item-create", "1", "{price=1}");
 
 		dict.put(itemId + "", "");
 
