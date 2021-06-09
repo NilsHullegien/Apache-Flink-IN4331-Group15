@@ -29,6 +29,12 @@ services:
       context: .
     expose:
       - "1108"
+      - "8080"
+      - "9092"
+    depends_on:
+      - kafka
+    links:
+      - "kafka:kafka"
 
   ###############################################################
   #    StateFun runtime
