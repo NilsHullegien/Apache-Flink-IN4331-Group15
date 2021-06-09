@@ -57,6 +57,7 @@ final class StockFn implements StatefulFunction {
 
   @Override
   public CompletableFuture<Void> apply(Context context, Message message) {
+    System.out.println("STOCK FN APPLIED");
     if (message.is(STOCK_FIND_JSON_TYPE)) {
       System.out.println("Apply Find");
 
