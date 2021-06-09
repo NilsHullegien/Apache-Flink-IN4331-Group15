@@ -4,16 +4,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class StockAdd {
 
-	@JsonProperty("number_add")
-	private Integer number;
+  @JsonProperty("number_add")
+  private Integer number;
 
-	public StockAdd() {}
+  public StockAdd() {}
 
-	public StockAdd(Integer number) {
-		this.number = number;
-	}
+  public StockAdd(Integer number) {
+    this.number = number;
+  }
 
-	public Integer getNumber() {
-		return number;
-	}
+  public Integer getNumber() {
+    return number;
+  }
 }

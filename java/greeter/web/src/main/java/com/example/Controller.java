@@ -50,10 +50,6 @@ import org.springframework.util.backoff.FixedBackOff;
 import com.common.Order;
 import com.common.Item;
 
-/**
- * @author Gary Russell
- * @since 2.2.1
- */
 @RestController
 public class Controller {
 
@@ -65,7 +61,12 @@ public class Controller {
 	private final TaskExecutor exec = new SimpleAsyncTaskExecutor();
 
 	@Autowired
-	private KafkaTemplate<Object, Object> template;
+	private KafkaTemplate<String,String> template;
+
+	@Autowired
+	public Controller(KafkaTemplate<String, String> kafkaTemplate) {
+		this.template = kafkaTemplate;
+	}
 
 	public void defferedReturn(DeferredResult<ResponseEntity<?>> output, String orderIdIndex) {
 		while (dict.get(orderIdIndex) == "") {
@@ -82,28 +83,25 @@ public class Controller {
 		output.setResult(ResponseEntity.ok(dict.get(orderIdIndex)));
 	}
 
-	@KafkaListener(groupId = "OrderGroup", id = "OrderGroupReceive", topics = "createOrderReceive")	
+	@KafkaListener(groupId = "OrderGroup", id = "OrderGroupReceive", topics = "createOrderReceive")
 	public void listenCreate(String orderId2) {
 		logger.info("Received change listener: " + orderId2);
 		System.out.println("--------222222----------");
 		dict.put(orderId2, orderId2);
-		//this.exec.execute(() -> System.out.println("Hit Enter to terminate..."));
 	}
 
-	@KafkaListener(groupId = "OrderGroup", id = "OrderCheckoutReceive", topics = "checkoutReceive")	
+	@KafkaListener(groupId = "OrderGroup", id = "OrderCheckoutReceive", topics = "checkoutReceive")
 	public void listen2Create(String orderId3) {
 		System.out.println("--------3333333----------");
 		logger.info("Received change listener: " + orderId3);
 		dict.put(orderId3, orderId3);
-		//this.exec.execute(() -> System.out.println("Hit Enter to terminate..."));
 	}
 
-	@KafkaListener(groupId = "OrderGroup", id = "OrderFindReceive", topics = "findReceive")	
+	@KafkaListener(groupId = "OrderGroup", id = "OrderFindReceive", topics = "findReceive")
 	public void listen3Create(String orderId4) {
 		System.out.println("--------44444----------");
 		logger.info("Received change listener: " + orderId4);
 		dict.put(orderId4, orderId4);
-		//this.exec.execute(() -> System.out.println("Hit Enter to terminate..."));
 	}
 
 	//Get - creates an order for the given user, and returns an order_id
@@ -112,15 +110,15 @@ public class Controller {
 		System.out.println("--------5555555----------");
 		orderId++;
 		dict.put(userId + "", "");
-		this.template.send("order-create", new Order(userId, orderId));
+		this.template.send("order-create", new Order(userId, orderId).toString());
 		DeferredResult<ResponseEntity<?>> output = new DeferredResult<>();
 
 		ForkJoinPool.commonPool().submit(() -> {
 			defferedReturn(output, userId + "");
 		});
 
-		return output;	
-		
+		return output;
+
 		//return "{\"order_id\":"+orderId+"}";
 	}
 
@@ -148,7 +146,7 @@ public class Controller {
 			defferedReturn(output, order_id + "");
 		});
 
-		return output;	
+		return output;
 	}
 
 	//Post - adds a given item in the order given
@@ -158,7 +156,7 @@ public class Controller {
 		String[] ids = new String[2];
 		ids[0] = order_id;
 		ids[1] = item_id;
-		this.template.send("addItemOrder", ids);
+		this.template.send("addItemOrder", Arrays.toString(ids));
 	}
 
 	//Post - remove a given item in the order given
@@ -168,7 +166,7 @@ public class Controller {
 		String[] ids = new String[2];
 		ids[0] = order_id;
 		ids[1] = item_id;
-		this.template.send("removeItemOrder", ids);
+		this.template.send("removeItemOrder", Arrays.toString(ids));
 	}
 
 	//Get - remove a given item in the order given
@@ -185,7 +183,7 @@ public class Controller {
 			defferedReturn(output, order_id + "");
 		});
 
-		return output;	
+		return output;
 	}
 
 
@@ -203,15 +201,15 @@ public class Controller {
 			defferedReturn(output, item_id + "");
 		});
 
-		return output;	
+		return output;
 	}
 
 	//GET - creates a item in the stock
 	@GetMapping(path = "/stock/item/create/{price}")
-	public DeferredResult<ResponseEntity<?>> createStock(@PathVariable float price) {
+	public DeferredResult<ResponseEntity<?>> createStock(@PathVariable Integer price) {
 		System.out.println("--------12-0000000----------");
 		itemId++;
-		this.template.send("createStock", new Item(itemId, price));
+		this.template.send("stock-item-create", "{\"price\":'" + price + "'}");
 
 		dict.put(itemId + "", "");
 
@@ -221,9 +219,9 @@ public class Controller {
 			defferedReturn(output, itemId + "");
 		});
 
-		return output;	
+		return output;
 	}
-	
+
 	//Post - add an item form the stock by the given amount
 	@PostMapping(path = "/stock/add/{item_id}/{number}")
 	public void addItemStock(@PathVariable String item_id, @PathVariable String number) {
@@ -231,7 +229,7 @@ public class Controller {
 		String[] ids = new String[2];
 		ids[0] = item_id;
 		ids[1] = number;
-		this.template.send("addItemStock", ids);
+		this.template.send("addItemStock", Arrays.toString(ids));
 	}
 
 	//Post - subtracts an item form the stock by the given amount
@@ -241,10 +239,10 @@ public class Controller {
 		String[] ids = new String[2];
 		ids[0] = item_id;
 		ids[1] = number;
-		this.template.send("subtractItemStock", ids);
+		this.template.send("subtractItemStock", Arrays.toString(ids));
 	}
 
-	//Post - subtract amount of the order from the users credit 
+	//Post - subtract amount of the order from the users credit
 	@PostMapping(path = "/payment/pay/{user_id}/{order_id}/{amount}")
 	public void payPayment(@PathVariable String user_id, @PathVariable String order_id, @PathVariable String amount) {
 		System.out.println("--------15-0000000----------");
@@ -252,25 +250,25 @@ public class Controller {
 		ids[0] = user_id;
 		ids[1] = order_id;
 		ids[2] = amount;
-		this.template.send("payPayment", ids);
+		this.template.send("payPayment", Arrays.toString(ids));
 	}
 
-	//Post - subtract amount of the order from the users credit 
+	//Post - subtract amount of the order from the users credit
 	@PostMapping(path = "/payment/cancel/{user_id}/{order_id}")
 	public void cancelPayment(@PathVariable String user_id, @PathVariable String order_id) {
 		System.out.println("--------16-0000000----------");
 		String[] ids = new String[2];
 		ids[0] = user_id;
 		ids[1] = order_id;
-		this.template.send("cancelPayment", ids);
+		this.template.send("cancelPayment", Arrays.toString(ids));
 	}
 
-	//Get - get payed status of an order 
+	//Get - get payed status of an order
 	@GetMapping(path = "/payment/status/{order_id}")
 	public DeferredResult<ResponseEntity<?>> statusPayment(@PathVariable String order_id) {
 		System.out.println("--------17-0000000----------");
 		this.template.send("statusPayment", order_id);
-		
+
 		dict.put(order_id + "", "");
 
 		DeferredResult<ResponseEntity<?>> output = new DeferredResult<>();
@@ -279,7 +277,7 @@ public class Controller {
 			defferedReturn(output, order_id + "");
 		});
 
-		return output;	
+		return output;
 	}
 
 	//Get - add funds to user his account
@@ -289,7 +287,7 @@ public class Controller {
 		String[] ids = new String[2];
 		ids[0] = user_id;
 		ids[1] = amount;
-		this.template.send("addPayment", ids);
+		this.template.send("addPayment", Arrays.toString(ids));
 
 		dict.put(user_id + "", "");
 

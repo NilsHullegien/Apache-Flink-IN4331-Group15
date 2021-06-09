@@ -48,7 +48,6 @@ import com.common.Order;
 public class Application {
 
 	private final Logger logger = LoggerFactory.getLogger(Application.class);
-
 	private final TaskExecutor exec = new SimpleAsyncTaskExecutor();
 
 	public static void main(String[] args) {
@@ -56,7 +55,7 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 	}
 
-	/*
+	/* 
 	 * Boot will autowire this into the container factory.
 	 */
 	@Bean
@@ -110,12 +109,12 @@ public class Application {
 	@Bean
 	public NewTopic topic() {
 		System.out.println("--------NEW TOPIC $----------");
-		return new NewTopic("topic1", 1, (short) 1);
+		return new NewTopic("stock-item-create-Spring", 1, (short) 1);
 	}
 
 	@Bean
 	public NewTopic dlt() {
-		return new NewTopic("topic1.DLT", 1, (short) 1);
+		return new NewTopic("stock-item-create.DLT", 1, (short) 1);
 	}
 
 	@Bean

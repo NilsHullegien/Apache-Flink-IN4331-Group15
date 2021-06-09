@@ -4,13 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class OrderRemoveItem {
 
-    @JsonProperty("item_id_remove")
-    private Integer itemId;
+  @JsonProperty("item_id_remove")
+  private Integer itemId;
 
-    public OrderRemoveItem() {
-    }
+  public OrderRemoveItem() {}
 
-    public Integer getItemId() {
-        return itemId;
-    }
+  public Integer getItemId() {
+    return itemId;
+  }
 }
