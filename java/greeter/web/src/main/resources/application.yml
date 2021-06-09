@@ -1,5 +1,5 @@
 spring:
   kafka:
-    bootstrap-servers: 172.31.0.4:9092
+    bootstrap-servers: 172.28.1.5:9092
     producer:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
