@@ -4,16 +4,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class InternalStockSubtract {
 
-    @JsonProperty("internal_subtract")
-    private Integer number;
+  @JsonProperty("internal_subtract")
+  private Integer number;
 
-    public InternalStockSubtract() {}
+  public InternalStockSubtract() {}
 
-    public InternalStockSubtract(Integer number) {
-        this.number = number;
-    }
+  public InternalStockSubtract(Integer number) {
+    this.number = number;
+  }
 
-    public Integer getNumber() {
-        return number;
-    }
+  public Integer getNumber() {
+    return number;
+  }
 }
