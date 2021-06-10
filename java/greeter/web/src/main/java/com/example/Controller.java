@@ -1,268 +1,199 @@
 package com.example;
 
-import com.common.Order;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.async.*;
+import org.springframework.http.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
+import java.lang.*;
+import java.io.*;
+import java.util.*;
+
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaOperations;
+import org.springframework.kafka.core.*;
+import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
+import org.springframework.kafka.support.converter.RecordMessageConverter;
+import org.springframework.kafka.support.converter.StringJsonMessageConverter;
+import org.springframework.util.backoff.FixedBackOff;
 
 @RestController
 public class Controller {
 
-	private int orderId = 0;
-	private int itemId = 0;
+	private int order_id = 0;
+	private int item_id = 0;
 	volatile Hashtable<String, String> dict = new Hashtable<String, String>();
 	private final Logger logger = LoggerFactory.getLogger(Application.class);
 
 	private final TaskExecutor exec = new SimpleAsyncTaskExecutor();
 
 	@Autowired
-	private KafkaTemplate<String,Object> template;
+	private KafkaTemplate<Object, Object> template;
 
-	@Autowired
-	public Controller(KafkaTemplate<String, Object> kafkaTemplate) {
-		this.template = kafkaTemplate;
-	}
-
-	public void defferedReturn(DeferredResult<ResponseEntity<?>> output, String orderIdIndex) {
-		while (dict.get(orderIdIndex) == "") {
+	public void defferedReturn(DeferredResult<ResponseEntity<?>> output, String order_id) {
+		while (dict.get(order_id) == "") {
 			try {
 				TimeUnit.SECONDS.sleep(1);
-				logger.info("Sleeping");
 			}
 			catch (Exception e){
-				logger.info("exception");
 				System.out.println("--------EXEPTION----------");
 			}
 		}
-		logger.info("output: " + dict.get(orderIdIndex));
-		output.setResult(ResponseEntity.ok(dict.get(orderIdIndex)));
+		output.setResult(ResponseEntity.ok(dict.get(order_id)));
 	}
 
-	@KafkaListener(groupId = "OrderGroup", id = "OrderGroupReceive", topics = "createOrderReceive")
-	public void listenCreate(String orderId2) {
-		logger.info("Received change listener: " + orderId2);
-		System.out.println("--------222222----------");
-		dict.put(orderId2, orderId2);
+	@KafkaListener(groupId = "OrderGroup", id = "OrderGroupReceive", topics = "create-order-receive")	
+	public void listenCreate(String order_id) {
+		dict.put(order_id, order_id);
 	}
 
-	@KafkaListener(groupId = "OrderGroup", id = "OrderCheckoutReceive", topics = "checkoutReceive")
-	public void listen2Create(String orderId3) {
-		System.out.println("--------3333333----------");
-		logger.info("Received change listener: " + orderId3);
-		dict.put(orderId3, orderId3);
+	@KafkaListener(groupId = "OrderGroup", id = "OrderCheckoutReceive", topics = "checkout-receive")	
+	public void listen2Create(String order_id) {
+		dict.put(order_id, order_id);
 	}
 
-	@KafkaListener(groupId = "OrderGroup", id = "OrderFindReceive", topics = "findReceive")
-	public void listen3Create(String orderId4) {
-		System.out.println("--------44444----------");
-		logger.info("Received change listener: " + orderId4);
-		dict.put(orderId4, orderId4);
+	@KafkaListener(groupId = "OrderGroup", id = "OrderFindReceive", topics = "find-receive")	
+	public void listen3Create(String order_id) {
+		dict.put(order_id, order_id);
 	}
 
 	//Get - creates an order for the given user, and returns an order_id
-	@GetMapping(path = "/orders/create/{userId}")
-	public DeferredResult<ResponseEntity<?>> createOrder(@PathVariable String userId) {
-		System.out.println("--------5555555----------");
-		orderId++;
-		dict.put(userId + "", "");
-		this.template.send("order-create", new Order(userId, orderId).toString());
+	@GetMapping(path = "/orders/create/{user_id}")
+	public String createOrder(@PathVariable Integer user_id) {
+		order_id++;
+		this.template.send("order-create", order_id + "", "{\"user_id\":\"" + user_id + "\"}");
+
+		dict.put(user_id + "", "");
 		DeferredResult<ResponseEntity<?>> output = new DeferredResult<>();
-
 		ForkJoinPool.commonPool().submit(() -> {
-			defferedReturn(output, userId + "");
+			defferedReturn(output, user_id + "");
 		});
-
-		return output;
-
-		//return "{\"order_id\":"+orderId+"}";
+		
+		return "{\"order_id\":" + order_id + "}";
 	}
 
 	//DELETE - deletes an order by ID
-	@PostMapping(path = "/orders/remove/{orderId}")
-	public void removeOrder(@PathVariable String orderId) {
-		System.out.println("--------6666666----------");
-		// this.template.send("createOrderReceive", orderId);
-		this.template.send("checkoutReceive", orderId);
-		// this.template.send("findReceive", orderId);
-		//no return, just 200 HTTP code if succesfull
+	@PostMapping(path = "/orders/remove/{order_id}")
+	public void removeOrder(@PathVariable Integer order_id) {
+		this.template.send("order-delete", order_id + "", "{\"order_delete_identifier\":\"" + order_id + "\"}");
 	}
 
 	//GET - retrieves the information of an order (id, payment status, items included and user id)
 	@GetMapping(path = "/orders/find/{order_id}")
-	public DeferredResult<ResponseEntity<?>> findOrder(@PathVariable String order_id) {
-		System.out.println("--------77777----------");
-		this.template.send("findOrder", order_id);
+	public DeferredResult<ResponseEntity<?>> findOrder(@PathVariable Integer order_id) {
+		this.template.send("order-find", order_id + "", "{\"order_find_identifier\":\"" + order_id + "\"}");
 
 		dict.put(order_id + "", "");
-
 		DeferredResult<ResponseEntity<?>> output = new DeferredResult<>();
-
 		ForkJoinPool.commonPool().submit(() -> {
 			defferedReturn(output, order_id + "");
 		});
 
-		return output;
+		return output;	
 	}
 
 	//Post - adds a given item in the order given
 	@PostMapping(path = "/orders/addItem/{order_id}/{item_id}")
-	public void addOrder(@PathVariable String order_id, @PathVariable String item_id) {
-		System.out.println("--------8888888----------");
-		String[] ids = new String[2];
-		ids[0] = order_id;
-		ids[1] = item_id;
-		this.template.send("addItemOrder", Arrays.toString(ids));
+	public void addOrder(@PathVariable Integer order_id, @PathVariable Integer item_id) {
+		this.template.send("order-add-item", order_id + "", "{\"item_id_add\":\"" + item_id + "\"}");
 	}
 
 	//Post - remove a given item in the order given
 	@PostMapping(path = "/orders/removeItem/{order_id}/{item_id}")
-	public void removeItemOrder(@PathVariable String order_id, @PathVariable String item_id) {
-		System.out.println("--------999999----------");
-		String[] ids = new String[2];
-		ids[0] = order_id;
-		ids[1] = item_id;
-		this.template.send("removeItemOrder", Arrays.toString(ids));
+	public void removeItemOrder(@PathVariable Integer order_id, @PathVariable Integer item_id) {
+		this.template.send("order-remove-item", order_id + "", "{\"item_id_remove\":\"" + item_id + "\"}");
 	}
 
 	//Get - remove a given item in the order given
 	@GetMapping(path = "/orders/checkout/{order_id}")
-	public DeferredResult<ResponseEntity<?>> checkoutOrder(@PathVariable String order_id) {
-		System.out.println("--------10-0000000----------");
-		this.template.send("checkoutOrder", order_id);
+	public DeferredResult<ResponseEntity<?>> checkoutOrder(@PathVariable Integer order_id) {
+		this.template.send("order-checkout", order_id + "", "{\"order_checkout_identifier\":\"" + order_id + "\"}");
 
 		dict.put(order_id + "", "");
-
 		DeferredResult<ResponseEntity<?>> output = new DeferredResult<>();
-
 		ForkJoinPool.commonPool().submit(() -> {
 			defferedReturn(output, order_id + "");
 		});
 
-		return output;
+		return output;	
 	}
-
 
 	//GET - retrieves the information of an item in stock
 	@GetMapping(path = "/stock/find/{item_id}")
-	public DeferredResult<ResponseEntity<?>> findStock(@PathVariable String item_id) {
-		System.out.println("--------11-0000000----------");
-		this.template.send("findStock", item_id);
+	public DeferredResult<ResponseEntity<?>> findStock(@PathVariable Integer item_id) {
+		this.template.send("stock-find", item_id + "", "{\"stock_find_identifier\":\"" + item_id + "\"}");
 
 		dict.put(item_id + "", "");
-
 		DeferredResult<ResponseEntity<?>> output = new DeferredResult<>();
-
 		ForkJoinPool.commonPool().submit(() -> {
 			defferedReturn(output, item_id + "");
 		});
 
-		return output;
+		return output;	
 	}
 
 	//GET - creates a item in the stock
 	@GetMapping(path = "/stock/item/create/{price}")
 	public DeferredResult<ResponseEntity<?>> createStock(@PathVariable Integer price) {
-		System.out.println("--------12-0000000----------");
-		itemId++;
-		this.template.send("stock-item-create", "1", "{price=1}");
+		item_id++;
+		this.template.send("stock-item-create", item_id + "", "{\"price\":\"" + price + "\"}");
 
-		dict.put(itemId + "", "");
-
+		dict.put(item_id + "", "");
 		DeferredResult<ResponseEntity<?>> output = new DeferredResult<>();
-
 		ForkJoinPool.commonPool().submit(() -> {
-			defferedReturn(output, itemId + "");
+			defferedReturn(output, item_id + "");
 		});
 
-		return output;
+		return output;	
 	}
-
+	
 	//Post - add an item form the stock by the given amount
-	@PostMapping(path = "/stock/add/{item_id}/{number}")
-	public void addItemStock(@PathVariable String item_id, @PathVariable String number) {
-		System.out.println("--------13-0000000----------");
-		String[] ids = new String[2];
-		ids[0] = item_id;
-		ids[1] = number;
-		this.template.send("addItemStock", Arrays.toString(ids));
+	@PostMapping(path = "/stock/add/{item_id}/{number_add}")
+	public void addItemStock(@PathVariable Integer item_id, @PathVariable Integer number_add) {
+		this.template.send("stock-add", item_id + "", "{\"number_add\":\"" + number_add + "\"}");
 	}
 
 	//Post - subtracts an item form the stock by the given amount
-	@PostMapping(path = "/stock/subtract/{item_id}/{number}")
-	public void subtractItemStock(@PathVariable String item_id, @PathVariable String number) {
-		System.out.println("--------14-0000000----------");
-		String[] ids = new String[2];
-		ids[0] = item_id;
-		ids[1] = number;
-		this.template.send("subtractItemStock", Arrays.toString(ids));
+	@PostMapping(path = "/stock/subtract/{item_id}/{number_subtract}")
+	public void subtractItemStock(@PathVariable Integer item_id, @PathVariable Integer number_subtract) {
+		this.template.send("stock-subtract", item_id + "", "{\"number_subtract\":\"" + number_subtract + "\"}");
 	}
 
-	//Post - subtract amount of the order from the users credit
-	@PostMapping(path = "/payment/pay/{user_id}/{order_id}/{amount}")
-	public void payPayment(@PathVariable String user_id, @PathVariable String order_id, @PathVariable String amount) {
-		System.out.println("--------15-0000000----------");
-		String[] ids = new String[3];
-		ids[0] = user_id;
-		ids[1] = order_id;
-		ids[2] = amount;
-		this.template.send("payPayment", Arrays.toString(ids));
-	}
-
-	//Post - subtract amount of the order from the users credit
-	@PostMapping(path = "/payment/cancel/{user_id}/{order_id}")
-	public void cancelPayment(@PathVariable String user_id, @PathVariable String order_id) {
-		System.out.println("--------16-0000000----------");
-		String[] ids = new String[2];
-		ids[0] = user_id;
-		ids[1] = order_id;
-		this.template.send("cancelPayment", Arrays.toString(ids));
-	}
-
-	//Get - get payed status of an order
+	//Get - get payed status of an order 
 	@GetMapping(path = "/payment/status/{order_id}")
-	public DeferredResult<ResponseEntity<?>> statusPayment(@PathVariable String order_id) {
-		System.out.println("--------17-0000000----------");
-		this.template.send("statusPayment", order_id);
-
+	public DeferredResult<ResponseEntity<?>> statusPayment(@PathVariable Integer order_id) {
+		this.template.send("payment-status", order_id + "");
+		
 		dict.put(order_id + "", "");
-
 		DeferredResult<ResponseEntity<?>> output = new DeferredResult<>();
-
 		ForkJoinPool.commonPool().submit(() -> {
 			defferedReturn(output, order_id + "");
 		});
 
-		return output;
+		return output;	
 	}
 
 	//Get - add funds to user his account
 	@GetMapping(path = "/payment/add_funds/{user_id}/{amount}")
-	public DeferredResult<ResponseEntity<?>> addPayment(@PathVariable String user_id, @PathVariable String amount) {
-		System.out.println("--------99 99 99 $----------");
-		String[] ids = new String[2];
-		ids[0] = user_id;
-		ids[1] = amount;
-		this.template.send("addPayment", Arrays.toString(ids));
+	public DeferredResult<ResponseEntity<?>> addPayment(@PathVariable Integer user_id, @PathVariable Integer amount) {
+		this.template.send("payment-add-funds", user_id + "", "{\"amount\":\"" + amount + "\"}");
 
 		dict.put(user_id + "", "");
-
 		DeferredResult<ResponseEntity<?>> output = new DeferredResult<>();
-
 		ForkJoinPool.commonPool().submit(() -> {
 			defferedReturn(output, user_id + "");
 		});
