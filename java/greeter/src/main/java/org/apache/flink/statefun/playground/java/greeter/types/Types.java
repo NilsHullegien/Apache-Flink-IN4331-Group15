@@ -129,4 +129,23 @@ public final class Types {
           TypeName.typeNameOf(TYPES_NAMESPACE, InternalStockSubtract.class.getName()),
           JSON_OBJ_MAPPER::writeValueAsBytes,
           bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalStockSubtract.class));
+
+  public static final Type<InternalOrderIsPaid> INTERNAL_ORDER_IS_PAID =
+      SimpleType.simpleImmutableTypeFrom(
+          TypeName.typeNameOf(TYPES_NAMESPACE, InternalOrderIsPaid.class.getName()),
+          JSON_OBJ_MAPPER::writeValueAsBytes,
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalOrderIsPaid.class));
+
+  public static final Type<InternalPaymentCancel> INTERNAL_PAYMENT_CANCEL =
+      SimpleType.simpleImmutableTypeFrom(
+          TypeName.typeNameOf(TYPES_NAMESPACE, InternalPaymentCancel.class.getName()),
+          JSON_OBJ_MAPPER::writeValueAsBytes,
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalPaymentCancel.class));
+
+  public static final Type<InternalOrderPay> INTERNAL_ORDER_PAY =
+      SimpleType.simpleImmutableTypeFrom(
+          TypeName.typeNameOf(TYPES_NAMESPACE, InternalOrderPay.class.getName()),
+          JSON_OBJ_MAPPER::writeValueAsBytes,
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalOrderPay.class));
+
 }

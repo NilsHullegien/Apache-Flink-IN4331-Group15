@@ -7,9 +7,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.concurrent.CompletableFuture;
+
+import org.apache.flink.statefun.playground.java.greeter.types.Internal.InternalOrderIsPaid;
+import org.apache.flink.statefun.playground.java.greeter.types.Internal.InternalOrderPay;
+import org.apache.flink.statefun.playground.java.greeter.types.Internal.InternalPaymentCancel;
 import org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentAddFunds;
+import org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentPay;
+import org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentStatus;
+import org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentCancel;
 import org.apache.flink.statefun.sdk.java.*;
 import org.apache.flink.statefun.sdk.java.message.Message;
+import org.apache.flink.statefun.sdk.java.message.MessageBuilder;
 import org.apache.flink.statefun.sdk.java.types.SimpleType;
 import org.apache.flink.statefun.sdk.java.types.Type;
 
@@ -35,14 +43,42 @@ final class PaymentFn implements StatefulFunction {
       context.storage().set(USER, user);
       System.out.println("Add user, new funds: " + user.funds);
     } else if (message.is(PAYMENT_STATUS_JSON_TYPE)) {
-      //Internal message order isPaid
-      //Return message true/false
+      System.out.println("PAYMENT STATUS");
+      PaymentStatus paymentStatusMessage = message.as(PAYMENT_STATUS_JSON_TYPE);
+
+      final InternalOrderIsPaid internalOrderIsPaidMessage =
+          new InternalOrderIsPaid(paymentStatusMessage.getOrderId());
+      context.send(
+          MessageBuilder.forAddress(OrderFn.TYPENAME, paymentStatusMessage.getOrderId().toString())
+              .withCustomType(INTERNAL_ORDER_IS_PAID, internalOrderIsPaidMessage)
+              .build());
     } else if (message.is(PAYMENT_CANCEL_JSON_TYPE)) {
       //Internal message get total cost for given order
-      throw new Exception();
+
+      PaymentCancel paymentCancelMessage = message.as(PAYMENT_CANCEL_JSON_TYPE);
+      System.out.println("Cancel order " + paymentCancelMessage.getOrderId().toString());
+
+      final InternalPaymentCancel internalPaymentCancelMessage =
+          new InternalPaymentCancel(paymentCancelMessage.getOrderId());
+
+      context.send(
+          MessageBuilder.forAddress(OrderFn.TYPENAME, paymentCancelMessage.getOrderId().toString())
+            .withCustomType(INTERNAL_PAYMENT_CANCEL, internalPaymentCancelMessage)
+            .build());
+
     } else if (message.is(PAYMENT_PAY_JSON_TYPE)) {
       //Pay order given by id (Internal to order => isPaid = true)
-      throw new Exception();
+      PaymentPay paymentPayMessage = message.as(PAYMENT_PAY_JSON_TYPE);
+      User user = getUser(context);
+      user.remove(paymentPayMessage.getAmount());
+
+      final InternalOrderPay internalOrderPayMessage =
+          new InternalOrderPay(true);
+
+      context.send(
+          MessageBuilder.forAddress(OrderFn.TYPENAME, paymentPayMessage.getOrderId().toString())
+              .withCustomType(INTERNAL_ORDER_PAY, internalOrderPayMessage)
+              .build());
     } else {
       throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
     }
