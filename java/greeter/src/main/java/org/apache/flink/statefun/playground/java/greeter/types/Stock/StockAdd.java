@@ -5,15 +5,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public final class StockAdd {
 
   @JsonProperty("number_add")
-  private Integer number;
+  private Integer numberAdd;
 
   public StockAdd() {}
 
-  public StockAdd(Integer number) {
-    this.number = number;
+  public StockAdd(Integer numberAdd) {
+    this.numberAdd = numberAdd;
   }
 
-  public Integer getNumber() {
-    return number;
+  public Integer getNumberAdd() {
+    return numberAdd;
   }
 }

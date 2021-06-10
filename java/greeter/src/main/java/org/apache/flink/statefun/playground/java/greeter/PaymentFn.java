@@ -8,13 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.concurrent.CompletableFuture;
 
-import org.apache.flink.statefun.playground.java.greeter.types.Internal.InternalOrderIsPaid;
 import org.apache.flink.statefun.playground.java.greeter.types.Internal.InternalOrderPay;
-import org.apache.flink.statefun.playground.java.greeter.types.Internal.InternalPaymentCancel;
 import org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentAddFunds;
-import org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentPay;
-import org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentStatus;
-import org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentCancel;
+import org.apache.flink.statefun.playground.java.greeter.types.Internal.InternalPaymentPay;
 import org.apache.flink.statefun.sdk.java.*;
 import org.apache.flink.statefun.sdk.java.message.Message;
 import org.apache.flink.statefun.sdk.java.message.MessageBuilder;
@@ -34,68 +30,76 @@ final class PaymentFn implements StatefulFunction {
 
   private static final TypeName KAFKA_EGRESS = TypeName.typeNameOf("order-namespace", "payment");
 
-  @Override
-  public CompletableFuture<Void> apply(Context context, Message message) throws Exception {
-    if (message.is(PAYMENT_ADD_FUNDS_JSON_TYPE)) {
-      PaymentAddFunds addFundsMessage = message.as(PAYMENT_ADD_FUNDS_JSON_TYPE);
-      User user = getUser(context);
-      user.add(addFundsMessage.getAmount());
-      context.storage().set(USER, user);
-      System.out.println("Add user, new funds: " + user.funds);
-    } else if (message.is(PAYMENT_STATUS_JSON_TYPE)) {
-      System.out.println("PAYMENT STATUS");
-      PaymentStatus paymentStatusMessage = message.as(PAYMENT_STATUS_JSON_TYPE);
+    @Override
+    public CompletableFuture<Void> apply(Context context, Message message) throws Exception {
+        if (message.is(PAYMENT_ADD_FUNDS_JSON_TYPE)) {
+            System.out.println("APPLY PAYMENT ADD FUNDS");
+            PaymentAddFunds addFundsMessage = message.as(PAYMENT_ADD_FUNDS_JSON_TYPE);
+            User user = getUser(context);
+            System.out.println("Funds before: " + user.funds);
+            user.add(addFundsMessage.getAmount());
+            context.storage().set(USER, user);
+            System.out.println("Funds after: " + user.funds);
 
-      final InternalOrderIsPaid internalOrderIsPaidMessage =
-          new InternalOrderIsPaid(paymentStatusMessage.getOrderId());
-      context.send(
-          MessageBuilder.forAddress(OrderFn.TYPENAME, paymentStatusMessage.getOrderId().toString())
-              .withCustomType(INTERNAL_ORDER_IS_PAID, internalOrderIsPaidMessage)
-              .build());
-    } else if (message.is(PAYMENT_CANCEL_JSON_TYPE)) {
-      //Internal message get total cost for given order
+        } else if (message.is(PAYMENT_STATUS_JSON_TYPE)) {
+            System.out.println("APPLY PAYMENT STATUS --- LOOP THROUGH ORDER, SHOULDNT SEE THIS MESSAGE");
+//      PaymentStatus paymentStatusMessage = message.as(PAYMENT_STATUS_JSON_TYPE);
+//
+//      final InternalOrderIsPaid internalOrderIsPaidMessage =
+//          new InternalOrderIsPaid(paymentStatusMessage.getOrderId());
+//      context.send(
+//          MessageBuilder.forAddress(OrderFn.TYPENAME, paymentStatusMessage.getOrderId().toString())
+//              .withCustomType(INTERNAL_ORDER_IS_PAID, internalOrderIsPaidMessage)
+//              .build());
 
-      PaymentCancel paymentCancelMessage = message.as(PAYMENT_CANCEL_JSON_TYPE);
-      System.out.println("Cancel order " + paymentCancelMessage.getOrderId().toString());
+        } else if (message.is(INTERNAL_PAYMENT_PAY_JSON_TYPE)) {
+            System.out.println("Apply Internal Payment Pay From Order");
+            //Pay order given by id (Internal to order => isPaid = true)
+            InternalPaymentPay paymentPayMessage = message.as(INTERNAL_PAYMENT_PAY_JSON_TYPE);
+            User user = getUser(context);
 
-      final InternalPaymentCancel internalPaymentCancelMessage =
-          new InternalPaymentCancel(paymentCancelMessage.getOrderId());
+            final InternalOrderPay internalOrderPayMessage;
+            System.out.println("Checking with user funds: " + user.funds + " on pay amount: " + paymentPayMessage.getPayAmount());
+            if (user.funds >= paymentPayMessage.getPayAmount()) {
+                System.out.println("User had funds: " + user.funds);
+                user.remove(paymentPayMessage.getPayAmount());
+                context.storage().set(USER, user);
+                System.out.println("New user funds: " + user.funds);
 
-      context.send(
-          MessageBuilder.forAddress(OrderFn.TYPENAME, paymentCancelMessage.getOrderId().toString())
-            .withCustomType(INTERNAL_PAYMENT_CANCEL, internalPaymentCancelMessage)
-            .build());
+                internalOrderPayMessage = new InternalOrderPay(true);
+            } else {
+                internalOrderPayMessage = new InternalOrderPay(false);
+                System.out.println("Not enough funds to pay order");
+            }
 
-    } else if (message.is(PAYMENT_PAY_JSON_TYPE)) {
-      //Pay order given by id (Internal to order => isPaid = true)
-      PaymentPay paymentPayMessage = message.as(PAYMENT_PAY_JSON_TYPE);
-      User user = getUser(context);
-      user.remove(paymentPayMessage.getAmount());
+            Address caller;
+            if (context.caller().isPresent()) {
+                caller = context.caller().get();
+            } else {
+                throw new RuntimeException("CALLER NOT PRESENT");
+            }
 
-      final InternalOrderPay internalOrderPayMessage =
-          new InternalOrderPay(true);
-
-      context.send(
-          MessageBuilder.forAddress(OrderFn.TYPENAME, paymentPayMessage.getOrderId().toString())
-              .withCustomType(INTERNAL_ORDER_PAY, internalOrderPayMessage)
-              .build());
-    } else {
-      throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
-    }
+            context.send(
+                    MessageBuilder.forAddress(caller)
+                            .withCustomType(INTERNAL_ORDER_PAY, internalOrderPayMessage)
+                            .build());
+        } else {
+            throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
+        }
 
     return context.done();
   }
 
-  private User getUser(Context context) {
-    User user = null;
-    try {
-      user =
-          context.storage().get(USER).orElseThrow(() -> new Exception("User not initialized?"));
-    } catch (Exception e) {
-      e.printStackTrace();
+    private User getUser(Context context) {
+        User user = null;
+        try {
+            user =
+                    context.storage().get(USER).orElse(new User());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return user;
     }
-    return user;
-  }
 
 
   private static class User {

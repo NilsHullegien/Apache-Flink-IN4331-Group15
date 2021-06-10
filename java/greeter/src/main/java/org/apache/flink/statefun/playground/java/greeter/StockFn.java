@@ -58,11 +58,13 @@ final class StockFn implements StatefulFunction {
   @Override
   public CompletableFuture<Void> apply(Context context, Message message) {
     if (message.is(STOCK_FIND_JSON_TYPE)) {
-      System.out.println("Apply Find");
+      System.out.println("Apply Stock Find");
 
       final StockFind stockFindMessage = message.as(STOCK_FIND_JSON_TYPE);
 
       Product product = getProductFromMessage(context);
+
+      // TODO: EGRESS
       System.out.println("Price: " + product.price + ", Quantity: " + product.quantity);
 
     } else if (message.is(STOCK_SUBTRACT_JSON_TYPE)) {
@@ -76,7 +78,7 @@ final class StockFn implements StatefulFunction {
       context.storage().set(PRODUCT, product);
 
     } else if (message.is(STOCK_ADD_JSON_TYPE)) {
-      System.out.println("Apply Add");
+      System.out.println("Apply Stock Add");
 
       final StockAdd stockAddMessage = message.as(STOCK_ADD_JSON_TYPE);
 
@@ -86,26 +88,36 @@ final class StockFn implements StatefulFunction {
       context.storage().set(PRODUCT, product);
 
     } else if (message.is(STOCK_ITEM_CREATE_JSON_TYPE)) {
-      System.out.println("Apply Item Create");
+      System.out.println("Apply Stock Item Create");
 
       final StockItemCreate stockItemCreateMessage = message.as(STOCK_ITEM_CREATE_JSON_TYPE);
       if (!context.storage().get(PRODUCT).isPresent()) {
         context.storage().set(PRODUCT, new Product(stockItemCreateMessage.getPrice(), 0));
       }
-    } else if (message.is(INTERNAL_STOCK_SUBTRACT)) {
+
+    } else if (message.is(INTERNAL_STOCK_SUBTRACT)) { //Internal message from ORDER_CHECKOUT
       System.out.println("INTERNAL STOCK SUBTRACT");
       Product product = getProductFromMessage(context);
       final InternalStockSubtract internalStockSubtractMessage =
           message.as(INTERNAL_STOCK_SUBTRACT);
 
       InternalStockCheckoutCallback internalCallbackMessage;
-      // TODO kinda dirty hack but okay for now
-      product.subtract(internalStockSubtractMessage.getNumber());
+
+      System.out.println("Old quantity: " + product.quantity);
+      product.subtract(internalStockSubtractMessage.getValue());
+      System.out.println("New quantity: " + product.quantity);
       context.storage().set(PRODUCT, product);
-      if (product.getQuantity() >= internalStockSubtractMessage.getNumber()) {
-        internalCallbackMessage = new InternalStockCheckoutCallback(true);
+
+      if (product.getQuantity() >= 0) {
+        int summed_cost = internalStockSubtractMessage.getValue() * product.getPrice();
+        System.out.println("Price: " + summed_cost);
+        internalCallbackMessage = new InternalStockCheckoutCallback(true, summed_cost);
+        System.out.println("Had enough items");
+
+        // TODO kinda dirty hack but okay for now
       } else {
-        internalCallbackMessage = new InternalStockCheckoutCallback(false);
+        internalCallbackMessage = new InternalStockCheckoutCallback(false, 0);
+        System.out.println("Did not have enough items in stock for request");
       }
 
       Address caller;

@@ -1,4 +1,4 @@
-package org.apache.flink.statefun.playground.java.greeter.types.Payment;
+package org.apache.flink.statefun.playground.java.greeter.types.Order;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

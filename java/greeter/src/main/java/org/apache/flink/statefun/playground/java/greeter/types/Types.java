@@ -101,17 +101,8 @@ public final class Types {
           JSON_OBJ_MAPPER::writeValueAsBytes,
           bytes -> JSON_OBJ_MAPPER.readValue(bytes, PaymentAddFunds.class));
 
-  public static final Type<PaymentStatus> PAYMENT_STATUS_JSON_TYPE =
-      SimpleType.simpleImmutableTypeFrom(
-          TypeName.typeNameOf(TYPES_NAMESPACE, PaymentStatus.class.getName()),
-          JSON_OBJ_MAPPER::writeValueAsBytes,
-          bytes -> JSON_OBJ_MAPPER.readValue(bytes, PaymentStatus.class));
-  public static final Type<PaymentCancel> PAYMENT_CANCEL_JSON_TYPE =
-      SimpleType.simpleImmutableTypeFrom(
-          TypeName.typeNameOf(TYPES_NAMESPACE, PaymentCancel.class.getName()),
-          JSON_OBJ_MAPPER::writeValueAsBytes,
-          bytes -> JSON_OBJ_MAPPER.readValue(bytes, PaymentCancel.class));
-  public static final Type<PaymentPay> PAYMENT_PAY_JSON_TYPE =
+  /** This one is actually an internal message */
+  public static final Type<InternalPaymentPay> INTERNAL_PAYMENT_PAY_JSON_TYPE =
       SimpleType.simpleImmutableTypeFrom(
           TypeName.typeNameOf(TYPES_NAMESPACE, PaymentPay.class.getName()),
           JSON_OBJ_MAPPER::writeValueAsBytes,
