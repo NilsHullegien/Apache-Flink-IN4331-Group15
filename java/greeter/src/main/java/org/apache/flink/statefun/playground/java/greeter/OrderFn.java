@@ -83,8 +83,6 @@ final class OrderFn implements StatefulFunction {
 			} else if (message.is(ORDER_DELETE_JSON_TYPE)) {
 				System.out.println("Apply Order Remove");
 
-				final OrderDelete orderDeleteMessage = message.as(ORDER_DELETE_JSON_TYPE);
-
 				Order order = getOrderFromMessage(context);
 				order.delete();
 
@@ -93,11 +91,10 @@ final class OrderFn implements StatefulFunction {
 			} else if (message.is(ORDER_FIND_JSON_TYPE)) {
 				System.out.println("Find Order");
 
-				final OrderFind orderFindMessage = message.as(ORDER_FIND_JSON_TYPE);
-
 				Order order = getOrderFromMessage(context);
 				System.out.println(order.toString());
 				//Total cost to Stock
+				//TODO SPAM TO STOCK, REQUEST PRICE
 
 			} else if (message.is(ORDER_ADD_ITEM_JSON_TYPE)) {
 				System.out.println("Add Order Item");
@@ -134,8 +131,6 @@ final class OrderFn implements StatefulFunction {
 
 				if (stock_poll_out == 0) { // might be unnecessary?
 					Order order = getOrderFromMessage(context);
-
-					int order_id = orderCheckoutMessage.getOrderId();
 
 					stock_poll_out = order.items.size();
 
@@ -267,6 +262,17 @@ final class OrderFn implements StatefulFunction {
 		return order;
 	}
 
+	private boolean isPaying(Context context) {
+		Boolean isPaying = null;
+		try {
+			isPaying =
+					context.storage().get(IS_PAYING).orElse(false);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return isPaying;
+	}
+
 	private Integer getStockPollOut(Context context) {
 		Integer stockPollOut = -1;
 		try {
@@ -358,5 +364,7 @@ final class OrderFn implements StatefulFunction {
 		public boolean isPaid() {
 			return this.hasPaid;
 		}
+
+		public void setPaid(Boolean newPaid) { this.hasPaid = newPaid; }
 	}
 }

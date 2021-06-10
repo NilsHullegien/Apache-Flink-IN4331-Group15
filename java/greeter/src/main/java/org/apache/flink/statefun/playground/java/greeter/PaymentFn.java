@@ -19,16 +19,16 @@ import org.apache.flink.statefun.sdk.java.types.Type;
 
 final class PaymentFn implements StatefulFunction {
 
-  private static final ValueSpec<User> USER = ValueSpec.named("user").withCustomType(User.TYPE);
+    private static final ValueSpec<User> USER = ValueSpec.named("user").withCustomType(User.TYPE);
 
-  static final TypeName TYPENAME = TypeName.typeNameOf("greeter.fns", "payment");
-  static final StatefulFunctionSpec SPEC =
-      StatefulFunctionSpec.builder(TYPENAME)
-          .withValueSpecs(USER)
-          .withSupplier(PaymentFn::new)
-          .build();
+    static final TypeName TYPENAME = TypeName.typeNameOf("greeter.fns", "payment");
+    static final StatefulFunctionSpec SPEC =
+            StatefulFunctionSpec.builder(TYPENAME)
+                    .withValueSpecs(USER)
+                    .withSupplier(PaymentFn::new)
+                    .build();
 
-  private static final TypeName KAFKA_EGRESS = TypeName.typeNameOf("order-namespace", "payment");
+    private static final TypeName KAFKA_EGRESS = TypeName.typeNameOf("order-namespace", "payment");
 
     @Override
     public CompletableFuture<Void> apply(Context context, Message message) throws Exception {
@@ -87,8 +87,8 @@ final class PaymentFn implements StatefulFunction {
             throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
         }
 
-    return context.done();
-  }
+        return context.done();
+    }
 
     private User getUser(Context context) {
         User user = null;
@@ -102,30 +102,30 @@ final class PaymentFn implements StatefulFunction {
     }
 
 
-  private static class User {
+    private static class User {
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+        private static final ObjectMapper mapper = new ObjectMapper();
 
-    public static final Type<User> TYPE =
-        SimpleType.simpleImmutableTypeFrom(
-            TypeName.typeNameFromString("com.example/User"),
-            mapper::writeValueAsBytes,
-            bytes -> mapper.readValue(bytes, User.class));
+        public static final Type<User> TYPE =
+                SimpleType.simpleImmutableTypeFrom(
+                        TypeName.typeNameFromString("com.example/User"),
+                        mapper::writeValueAsBytes,
+                        bytes -> mapper.readValue(bytes, User.class));
 
-    @JsonProperty("funds")
-    private int funds;
+        @JsonProperty("funds")
+        private int funds;
 
-    @JsonCreator
-    public User() {
-      this.funds = 0;
+        @JsonCreator
+        public User() {
+            this.funds = 0;
+        }
+
+        public void add(int addFunds) {
+            this.funds += addFunds;
+        }
+
+        public void remove(int removeFunds) {
+            this.funds -= removeFunds;
+        }
     }
-
-    public void add(int addFunds) {
-      this.funds += addFunds;
-    }
-
-    public void remove(int removeFunds) {
-      this.funds -= removeFunds;
-    }
-  }
 }

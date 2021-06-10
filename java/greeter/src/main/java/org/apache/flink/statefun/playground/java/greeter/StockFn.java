@@ -67,15 +67,16 @@ final class StockFn implements StatefulFunction {
       // TODO: EGRESS
       System.out.println("Price: " + product.price + ", Quantity: " + product.quantity);
 
-    } else if (message.is(STOCK_SUBTRACT_JSON_TYPE)) {
-      System.out.println("SUBTRACTING");
+    } else if (message.is(STOCK_SUBTRACT_JSON_TYPE)) { //Can go under 0
+      System.out.println("Apply Stock Subtract");
 
       final StockSubtract stockSubtractMessage = message.as(STOCK_SUBTRACT_JSON_TYPE);
-
       Product product = getProductFromMessage(context);
-      product.subtract(stockSubtractMessage.getNumber());
+      System.out.println("Quantity before: " + product.getQuantity());
 
+      product.subtract(stockSubtractMessage.getNumberSubtract());
       context.storage().set(PRODUCT, product);
+      System.out.println("Quantity after: " + product.getQuantity());
 
     } else if (message.is(STOCK_ADD_JSON_TYPE)) {
       System.out.println("Apply Stock Add");
@@ -83,8 +84,11 @@ final class StockFn implements StatefulFunction {
       final StockAdd stockAddMessage = message.as(STOCK_ADD_JSON_TYPE);
 
       Product product = getProductFromMessage(context);
-      product.add(stockAddMessage.getNumber());
 
+      System.out.println("Quantity before: " + product.getQuantity());
+      product.add(stockAddMessage.getNumberAdd());
+
+      System.out.println("Quantity after: " + product.getQuantity());
       context.storage().set(PRODUCT, product);
 
     } else if (message.is(STOCK_ITEM_CREATE_JSON_TYPE)) {
@@ -93,6 +97,9 @@ final class StockFn implements StatefulFunction {
       final StockItemCreate stockItemCreateMessage = message.as(STOCK_ITEM_CREATE_JSON_TYPE);
       if (!context.storage().get(PRODUCT).isPresent()) {
         context.storage().set(PRODUCT, new Product(stockItemCreateMessage.getPrice(), 0));
+        System.out.println("Added new product ID to stock");
+      } else {
+        System.out.println("Trying to add product at already existing ID");
       }
 
     } else if (message.is(INTERNAL_STOCK_SUBTRACT)) { //Internal message from ORDER_CHECKOUT
@@ -127,6 +134,8 @@ final class StockFn implements StatefulFunction {
         throw new RuntimeException("CALLER NOT PRESENT");
       }
 
+      System.out.println("RETURNING Internal stock checkout callback message: " +
+              "Cost: " + internalCallbackMessage.getSummed_cost() + " and isOk: " + internalCallbackMessage.isOk());
       context.send(
           MessageBuilder.forAddress(caller)
               .withCustomType(INTERNAL_STOCK_CHECKOUT_CALLBACK, internalCallbackMessage)

@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.statefun.playground.java.greeter.types.Internal.*;
 import org.apache.flink.statefun.playground.java.greeter.types.Order.*;
 import org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentAddFunds;
-import org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentCancel;
-import org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentPay;
-import org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentStatus;
+import org.apache.flink.statefun.playground.java.greeter.types.Internal.InternalPaymentPay;
 import org.apache.flink.statefun.playground.java.greeter.types.Stock.*;
 import org.apache.flink.statefun.playground.java.greeter.types.generated.UserProfile;
 import org.apache.flink.statefun.sdk.java.TypeName;
@@ -94,6 +92,12 @@ public final class Types {
           JSON_OBJ_MAPPER::writeValueAsBytes,
           bytes -> JSON_OBJ_MAPPER.readValue(bytes, OrderRemoveItem.class));
 
+  public static final Type<OrderPaymentStatus> PAYMENT_STATUS_JSON_TYPE =
+          SimpleType.simpleImmutableTypeFrom(
+                  TypeName.typeNameOf(TYPES_NAMESPACE, OrderPaymentStatus.class.getName()),
+                  JSON_OBJ_MAPPER::writeValueAsBytes,
+                  bytes -> JSON_OBJ_MAPPER.readValue(bytes, OrderPaymentStatus.class));
+
   /** PAYMENT */
   public static final Type<PaymentAddFunds> PAYMENT_ADD_FUNDS_JSON_TYPE =
       SimpleType.simpleImmutableTypeFrom(
@@ -104,9 +108,9 @@ public final class Types {
   /** This one is actually an internal message */
   public static final Type<InternalPaymentPay> INTERNAL_PAYMENT_PAY_JSON_TYPE =
       SimpleType.simpleImmutableTypeFrom(
-          TypeName.typeNameOf(TYPES_NAMESPACE, PaymentPay.class.getName()),
+          TypeName.typeNameOf(TYPES_NAMESPACE, InternalPaymentPay.class.getName()),
           JSON_OBJ_MAPPER::writeValueAsBytes,
-          bytes -> JSON_OBJ_MAPPER.readValue(bytes, PaymentPay.class));
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalPaymentPay.class));
 
   /** INTERNAL (CHECKOUT) */
   public static final Type<InternalStockCheckoutCallback> INTERNAL_STOCK_CHECKOUT_CALLBACK =

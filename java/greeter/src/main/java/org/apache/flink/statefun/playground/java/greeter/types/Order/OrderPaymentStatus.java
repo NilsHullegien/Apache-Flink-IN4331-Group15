@@ -2,11 +2,11 @@ package org.apache.flink.statefun.playground.java.greeter.types.Order;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class PaymentStatus {
+public class OrderPaymentStatus {
   @JsonProperty("payment_order_status")
   private Integer orderId;
 
-  public PaymentStatus() {}
+  public OrderPaymentStatus() {}
 
   public Integer getOrderId() {
     return orderId;
