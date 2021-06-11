@@ -7,4 +7,8 @@ public final class StockFind {
   private Integer stockFindIdentifier;
 
   public StockFind() {}
+
+  public Integer getStockFindIdentifier() {
+    return stockFindIdentifier;
+  }
 }

@@ -1,6 +1,7 @@
 package org.apache.flink.statefun.playground.java.greeter.types;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.flink.statefun.playground.java.greeter.types.Egress.EgressStockFind;
 import org.apache.flink.statefun.playground.java.greeter.types.Internal.*;
 import org.apache.flink.statefun.playground.java.greeter.types.Order.*;
 import org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentAddFunds;
@@ -142,5 +143,12 @@ public final class Types {
           TypeName.typeNameOf(TYPES_NAMESPACE, InternalOrderPay.class.getName()),
           JSON_OBJ_MAPPER::writeValueAsBytes,
           bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalOrderPay.class));
+
+
+  public static final Type<EgressStockFind> EGRESS_STOCK_FIND =
+      SimpleType.simpleImmutableTypeFrom(
+          TypeName.typeNameOf(TYPES_NAMESPACE, EgressStockFind.class.getName()),
+          JSON_OBJ_MAPPER::writeValueAsBytes,
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, EgressStockFind.class));
 
 }

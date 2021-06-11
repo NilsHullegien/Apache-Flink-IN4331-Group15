@@ -37,66 +37,66 @@ JSON
 )
 ingress_topic="stock-find" # StockFn
 send_to_kafka $key $json $ingress_topic
-
-# 3)
-key="0"
-json=$(cat <<JSON
- {"user_id":"0"}
-JSON
-)
-ingress_topic="order-create"
-
-send_to_kafka $key $json $ingress_topic
-
-# 4)
-key="0"
-json=$(cat <<JSON
- {"item_id_add":"0"}
-JSON
-)
-ingress_topic="order-add-item"
-send_to_kafka $key $json $ingress_topic
-
-# 5)
-key="0"
-json=$(cat <<JSON
- {"order_checkout_identifier":"0"}
-JSON
-)
-ingress_topic="order-checkout"
-send_to_kafka $key $json $ingress_topic
-
-key="0"
-json=$(cat <<JSON
- {"stock_find_identifier":"0"}
-JSON
-)
-ingress_topic="stock-find" # StockFn
-send_to_kafka $key $json $ingress_topic
-
-# 6)
-key="0"
-json=$(cat <<JSON
- {"item_id_add":"0"}
-JSON
-)
-ingress_topic="order-add-item"
-send_to_kafka $key $json $ingress_topic
-
-# 7)
-key="0"
-json=$(cat <<JSON
- {"order_checkout_identifier":"0"}
-JSON
-)
-ingress_topic="order-checkout"
-send_to_kafka $key $json $ingress_topic
-
-key="0"
-json=$(cat <<JSON
- {"stock_find_identifier":"0"}
-JSON
-)
-ingress_topic="stock-find" # StockFn
-send_to_kafka $key $json $ingress_topic
-
+#
+## 3)
+#key="0"
+#json=$(cat <<JSON
+# {"user_id":"0"}
+#JSON
+#)
+#ingress_topic="order-create"
+#
+#send_to_kafka $key $json $ingress_topic
+#
+## 4)
+#key="0"
+#json=$(cat <<JSON
+# {"item_id_add":"0"}
+#JSON
+#)
+#ingress_topic="order-add-item"
+#send_to_kafka $key $json $ingress_topic
+#
+## 5)
+#key="0"
+#json=$(cat <<JSON
+# {"order_checkout_identifier":"0"}
+#JSON
+#)
+#ingress_topic="order-checkout"
+#send_to_kafka $key $json $ingress_topic
+#
+#key="0"
+#json=$(cat <<JSON
+# {"stock_find_identifier":"0"}
+#JSON
+#)
+#ingress_topic="stock-find" # StockFn
+#send_to_kafka $key $json $ingress_topic
+#
+## 6)
+#key="0"
+#json=$(cat <<JSON
+# {"item_id_add":"0"}
+#JSON
+#)
+#ingress_topic="order-add-item"
+#send_to_kafka $key $json $ingress_topic
+#
+## 7)
+#key="0"
+#json=$(cat <<JSON
+# {"order_checkout_identifier":"0"}
+#JSON
+#)
+#ingress_topic="order-checkout"
+#send_to_kafka $key $json $ingress_topic
+#
+#key="0"
+#json=$(cat <<JSON
+# {"stock_find_identifier":"0"}
+#JSON
+#)
+#ingress_topic="stock-find" # StockFn
+#send_to_kafka $key $json $ingress_topic
+#

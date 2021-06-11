@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.concurrent.CompletableFuture;
+import org.apache.flink.statefun.playground.java.greeter.types.Egress.EgressStockFind;
 import org.apache.flink.statefun.playground.java.greeter.types.Internal.InternalStockCheckoutCallback;
 import org.apache.flink.statefun.playground.java.greeter.types.Internal.InternalStockSubtract;
 import org.apache.flink.statefun.playground.java.greeter.types.Stock.StockAdd;
@@ -32,6 +33,7 @@ import org.apache.flink.statefun.playground.java.greeter.types.Stock.StockItemCr
 import org.apache.flink.statefun.playground.java.greeter.types.Stock.StockSubtract;
 import org.apache.flink.statefun.playground.java.greeter.types.generated.UserProfile;
 import org.apache.flink.statefun.sdk.java.*;
+import org.apache.flink.statefun.sdk.java.io.KafkaEgressMessage;
 import org.apache.flink.statefun.sdk.java.message.Message;
 import org.apache.flink.statefun.sdk.java.message.MessageBuilder;
 import org.apache.flink.statefun.sdk.java.types.SimpleType;
@@ -63,6 +65,15 @@ final class StockFn implements StatefulFunction {
       final StockFind stockFindMessage = message.as(STOCK_FIND_JSON_TYPE);
 
       Product product = getProductFromMessage(context);
+
+      EgressStockFind egressMessage = new EgressStockFind(product.quantity, product.price + product.quantity);
+
+      context.send(
+          KafkaEgressMessage.forEgress(KAFKA_EGRESS)
+              .withTopic("egress-stock-find")
+              .withUtf8Key(stockFindMessage.getStockFindIdentifier().toString())
+              .withValue(EGRESS_STOCK_FIND, egressMessage)
+              .build());
 
       // TODO: EGRESS
       System.out.println("Price: " + product.price + ", Quantity: " + product.quantity);
