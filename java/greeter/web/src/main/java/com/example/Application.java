@@ -1,8 +1,6 @@
 package com.example;
 
 import org.apache.kafka.clients.admin.NewTopic;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -20,7 +18,6 @@ import org.springframework.util.backoff.FixedBackOff;
 @SpringBootApplication
 public class Application {
 
-	private final Logger logger = LoggerFactory.getLogger(Application.class);
 	private final TaskExecutor exec = new SimpleAsyncTaskExecutor();
 
 	public static void main(String[] args) {
@@ -42,7 +39,6 @@ public class Application {
 	@Profile("default") 
 	public ApplicationRunner runner() {
 		return args -> {
-			System.out.println("--------RUNNER $----------");
 			System.in.read();
 		};
 	}
