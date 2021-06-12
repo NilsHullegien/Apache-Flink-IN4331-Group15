@@ -41,7 +41,6 @@ public class Controller {
     private KafkaTemplate<Object, Object> template;
 
     public DeferredResult<ResponseEntity<?>> deffer(String key) {
-        dict.put(key, "");
         DeferredResult<ResponseEntity<?>> output = new DeferredResult<>();
         ForkJoinPool.commonPool().submit(() -> {
             defferedReturn(output, key);
@@ -49,30 +48,32 @@ public class Controller {
         return output;
     }
 
-    public void defferedReturn(DeferredResult<ResponseEntity<?>> output, String order_id) {
-        while (dict.get(order_id).equals("")) {
+    public void defferedReturn(DeferredResult<ResponseEntity<?>> output, String key) {
+        while (!dict.containsKey(key)) {
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (Exception e) {
                 System.out.println("Deffered return exception");
             }
         }
-        output.setResult(ResponseEntity.ok(dict.get(order_id)));
+        String outputString = dict.get(key);
+        dict.remove(key);
+        output.setResult(ResponseEntity.ok(outputString));
     }
 
     @KafkaListener(groupId = "group", id = "create-order-receive", topics = "create-order-receive")
-    public void listen1Create(String order_id) {
-        dict.put(order_id, order_id);
+    public void listen1Create(String key) {
+        dict.put(key, key);
     }
 
     @KafkaListener(groupId = "group", id = "checkout-receive", topics = "checkout-receive")
-    public void listen2Create(String order_id) {
-        dict.put(order_id, order_id);
+    public void listen2Create(String key) {
+        dict.put(key, key);
     }
 
     @KafkaListener(groupId = "group", id = "find-receive", topics = "find-receive")
-    public void listen3Create(String order_id) {
-        dict.put(order_id, order_id);
+    public void listen3Create(String key) {
+        dict.put(key, key);
     }
 
     //Get - creates an order for the given user, and returns an order_id
