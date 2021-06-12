@@ -23,6 +23,4 @@ public class InternalStockCheckoutCallback {
   public Integer getSummed_cost() {
     return summed_cost;
   }
-
-
 }

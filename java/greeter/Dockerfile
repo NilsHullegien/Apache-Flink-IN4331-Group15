@@ -16,10 +16,8 @@
 # Build the functions code ...
 FROM maven:3.6.3-jdk-11 AS builder
 COPY pom.xml /usr/src/app/pom.xml
-RUN mvn -f /usr/src/app/pom.xml dependency:go-offline
 COPY src /usr/src/app/src
-
-RUN mvn -f /usr/src/app/pom.xml package
+RUN --mount=type=cache,target=/root/.m2 mvn -f /usr/src/app/pom.xml clean package
 
 # ... and run the web server!
 FROM openjdk:8

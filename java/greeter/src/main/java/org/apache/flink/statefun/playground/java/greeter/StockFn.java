@@ -66,20 +66,21 @@ final class StockFn implements StatefulFunction {
 
       Product product = getProductFromMessage(context);
 
-      EgressStockFind egressMessage = new EgressStockFind(product.quantity, product.price + product.quantity);
+      EgressStockFind egressMessage =
+          new EgressStockFind(product.quantity, product.price + product.quantity);
 
-      context.send(
-          KafkaEgressMessage.forEgress(KAFKA_EGRESS)
-              .withTopic("egress-stock-find")
-              .withUtf8Key(stockFindMessage.getStockFindIdentifier().toString())
-              .withValue(EGRESS_STOCK_FIND, egressMessage)
-              .build());
+//      context.send(
+//          KafkaEgressMessage.forEgress(KAFKA_EGRESS)
+//              .withTopic("egress-stock-find")
+//              .withUtf8Key(stockFindMessage.getStockFindIdentifier().toString())
+//              .withValue(EGRESS_STOCK_FIND, egressMessage)
+//              .build());
 
       // TODO: EGRESS
       System.out.println("Price: " + product.price + ", Quantity: " + product.quantity);
 
-    } else if (message.is(STOCK_SUBTRACT_JSON_TYPE)) { //Can go under 0
-      System.out.println("Apply Stock Subtract");
+    } else if (message.is(STOCK_SUBTRACT_JSON_TYPE)) { // Can go under 0
+      System.out.println("Apply Stock Subtract TYPE");
 
       final StockSubtract stockSubtractMessage = message.as(STOCK_SUBTRACT_JSON_TYPE);
       Product product = getProductFromMessage(context);
@@ -113,7 +114,7 @@ final class StockFn implements StatefulFunction {
         System.out.println("Trying to add product at already existing ID");
       }
 
-    } else if (message.is(INTERNAL_STOCK_SUBTRACT)) { //Internal message from ORDER_CHECKOUT
+    } else if (message.is(INTERNAL_STOCK_SUBTRACT)) { // Internal message from ORDER_CHECKOUT
       System.out.println("INTERNAL STOCK SUBTRACT");
       Product product = getProductFromMessage(context);
       final InternalStockSubtract internalStockSubtractMessage =
@@ -145,8 +146,12 @@ final class StockFn implements StatefulFunction {
         throw new RuntimeException("CALLER NOT PRESENT");
       }
 
-      System.out.println("RETURNING Internal stock checkout callback message: " +
-              "Cost: " + internalCallbackMessage.getSummed_cost() + " and isOk: " + internalCallbackMessage.isOk());
+      System.out.println(
+          "RETURNING Internal stock checkout callback message: "
+              + "Cost: "
+              + internalCallbackMessage.getSummed_cost()
+              + " and isOk: "
+              + internalCallbackMessage.isOk());
       context.send(
           MessageBuilder.forAddress(caller)
               .withCustomType(INTERNAL_STOCK_CHECKOUT_CALLBACK, internalCallbackMessage)

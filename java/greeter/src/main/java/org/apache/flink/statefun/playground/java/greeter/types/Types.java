@@ -3,9 +3,9 @@ package org.apache.flink.statefun.playground.java.greeter.types;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.statefun.playground.java.greeter.types.Egress.EgressStockFind;
 import org.apache.flink.statefun.playground.java.greeter.types.Internal.*;
+import org.apache.flink.statefun.playground.java.greeter.types.Internal.InternalPaymentPay;
 import org.apache.flink.statefun.playground.java.greeter.types.Order.*;
 import org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentAddFunds;
-import org.apache.flink.statefun.playground.java.greeter.types.Internal.InternalPaymentPay;
 import org.apache.flink.statefun.playground.java.greeter.types.Stock.*;
 import org.apache.flink.statefun.playground.java.greeter.types.generated.UserProfile;
 import org.apache.flink.statefun.sdk.java.TypeName;
@@ -94,10 +94,10 @@ public final class Types {
           bytes -> JSON_OBJ_MAPPER.readValue(bytes, OrderRemoveItem.class));
 
   public static final Type<OrderPaymentStatus> PAYMENT_STATUS_JSON_TYPE =
-          SimpleType.simpleImmutableTypeFrom(
-                  TypeName.typeNameOf(TYPES_NAMESPACE, OrderPaymentStatus.class.getName()),
-                  JSON_OBJ_MAPPER::writeValueAsBytes,
-                  bytes -> JSON_OBJ_MAPPER.readValue(bytes, OrderPaymentStatus.class));
+      SimpleType.simpleImmutableTypeFrom(
+          TypeName.typeNameOf(TYPES_NAMESPACE, OrderPaymentStatus.class.getName()),
+          JSON_OBJ_MAPPER::writeValueAsBytes,
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, OrderPaymentStatus.class));
 
   /** PAYMENT */
   public static final Type<PaymentAddFunds> PAYMENT_ADD_FUNDS_JSON_TYPE =
@@ -144,11 +144,9 @@ public final class Types {
           JSON_OBJ_MAPPER::writeValueAsBytes,
           bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalOrderPay.class));
 
-
   public static final Type<EgressStockFind> EGRESS_STOCK_FIND =
       SimpleType.simpleImmutableTypeFrom(
           TypeName.typeNameOf(TYPES_NAMESPACE, EgressStockFind.class.getName()),
           JSON_OBJ_MAPPER::writeValueAsBytes,
           bytes -> JSON_OBJ_MAPPER.readValue(bytes, EgressStockFind.class));
-
 }

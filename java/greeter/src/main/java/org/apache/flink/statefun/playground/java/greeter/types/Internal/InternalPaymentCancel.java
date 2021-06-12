@@ -3,16 +3,16 @@ package org.apache.flink.statefun.playground.java.greeter.types.Internal;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class InternalPaymentCancel {
-	@JsonProperty("order_id")
-	private Integer orderId;
+  @JsonProperty("order_id")
+  private Integer orderId;
 
-	public InternalPaymentCancel() {}
+  public InternalPaymentCancel() {}
 
-	public InternalPaymentCancel(Integer orderId) {
-		this.orderId = orderId;
-	}
+  public InternalPaymentCancel(Integer orderId) {
+    this.orderId = orderId;
+  }
 
-	public Integer getOrderId() {
-		return orderId;
-	}
+  public Integer getOrderId() {
+    return orderId;
+  }
 }

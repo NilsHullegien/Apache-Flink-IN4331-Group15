@@ -12,9 +12,7 @@ public class InternalPaymentPay {
     this.payAmount = payAmount;
   }
 
-
   public Integer getPayAmount() {
     return payAmount;
   }
-
 }
