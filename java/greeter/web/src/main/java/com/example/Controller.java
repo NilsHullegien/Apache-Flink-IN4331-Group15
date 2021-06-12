@@ -136,13 +136,13 @@ public class Controller {
     //Post - add an item form the stock by the given amount
     @PostMapping(path = "/stock/add/{item_id}/{number_add}")
     public void addItemStock(@PathVariable Integer item_id, @PathVariable Integer number_add) {
-        this.template.send("stock-add", item_id + "", "{\"number_add\":\"" + number_add + "\"}");
+        this.template.send("stock-add", String.valueOf(item_id), "{\"number_add\":\"" + number_add + "\"}");
     }
 
     //Post - subtracts an item form the stock by the given amount
     @PostMapping(path = "/stock/subtract/{item_id}/{number_subtract}")
     public void subtractItemStock(@PathVariable Integer item_id, @PathVariable Integer number_subtract) {
-        this.template.send("stock-subtract", item_id + "", "{\"number_subtract\":\"" + number_subtract + "\"}");
+        this.template.send("stock-subtract", String.valueOf(item_id), "{\"number_subtract\":\"" + number_subtract + "\"}");
     }
 
     //Get - get payed status of an order
