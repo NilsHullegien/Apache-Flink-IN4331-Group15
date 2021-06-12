@@ -20,6 +20,9 @@ package org.apache.flink.statefun.playground.java.shoppingcart;
 
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -33,6 +36,8 @@ import org.apache.flink.statefun.sdk.java.slice.Slice;
 import org.apache.flink.statefun.sdk.java.slice.Slices;
 
 public class Expose {
+
+  private static final Logger LOG = LoggerFactory.getLogger(UserShoppingCartFn.class);
 
   public static void main(String... args) {
     StatefulFunctionSpec stockFn =
@@ -76,6 +81,7 @@ public class Expose {
 
     private void onRequestBody(HttpServerExchange exchange, byte[] requestBytes) {
       try {
+        LOG.info("testfffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         CompletableFuture<Slice> future = handler.handle(Slices.wrap(requestBytes));
         exchange.dispatch();
         future.whenComplete(

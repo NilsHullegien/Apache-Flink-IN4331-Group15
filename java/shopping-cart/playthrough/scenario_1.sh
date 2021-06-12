@@ -20,7 +20,7 @@ sleep 1
 # 2)
 key="1" # userId
 json=$(cat <<JSON
-  {"userId":"1","quantity":3,"itemId":"socks"}
+  {"userId":"1","quantity":51,"itemId":"socks"}
 JSON
 )
 ingress_topic="add-to-cart" # UserShoppingCartFn
@@ -34,4 +34,14 @@ json=$(cat <<JSON
 JSON
 )
 ingress_topic="checkout" # UserShoppingCartFn
+send_to_kafka $key $json $ingress_topic
+sleep 1
+#--------------------------------
+# 4)
+key="1" # userId
+json=$(cat <<JSON
+  {"userId":"1"}
+JSON
+)
+ingress_topic="clear-cart" # UserShoppingCartFn
 send_to_kafka $key $json $ingress_topic
