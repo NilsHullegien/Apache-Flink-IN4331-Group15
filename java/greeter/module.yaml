@@ -93,6 +93,27 @@ module:
                 valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Order.OrderRemoveItem
                 targets:
                   - greeter.fns/order
+      - ingress:
+          meta:
+            type: io.statefun.kafka/ingress
+            id: greeter.io/payment
+          spec:
+            address: kafka:9092
+            deliverySemantic:
+              type: exactly-once
+              transactionTimeoutMillis: 10000
+            consumerGroupId: greeter
+            startupPosition:
+              type: earliest
+            topics:
+              - topic: payment-status
+                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentStatus
+                targets:
+                  - greeter.fns/payment
+              - topic: payment-add-funds
+                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentAddFunds
+                targets:
+                  - greeter.fns/payment
     egresses:
       - egress:
           meta:

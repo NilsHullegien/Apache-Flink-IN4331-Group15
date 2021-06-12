@@ -7,5 +7,5 @@ json=$(cat <<JSON
  {"price":"5"}
 JSON
 )
-ingress_topic="createOrderReceive" 
+ingress_topic="createOrderReceive"
 send_to_kafka $key $json $ingress_topic

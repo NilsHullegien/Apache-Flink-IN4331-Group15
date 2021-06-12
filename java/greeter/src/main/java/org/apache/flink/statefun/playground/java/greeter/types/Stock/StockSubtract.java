@@ -5,15 +5,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public final class StockSubtract {
 
   @JsonProperty("number_subtract")
-  private Integer number;
+  private Integer numberSubtract;
 
   public StockSubtract() {};
 
-  public StockSubtract(Integer number) {
-    this.number = number;
+  public StockSubtract(Integer numberSubtract) {
+    this.numberSubtract = numberSubtract;
   }
 
-  public Integer getNumber() {
-    return number;
+  public Integer getNumberSubtract() {
+    return numberSubtract;
   }
 }

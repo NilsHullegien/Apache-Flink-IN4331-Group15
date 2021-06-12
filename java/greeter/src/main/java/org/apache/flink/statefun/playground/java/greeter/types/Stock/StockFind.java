@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class StockFind {
   @JsonProperty("stock_find_identifier")
-  private Integer itemId;
+  private Integer stockFindIdentifier;
 
   public StockFind() {}
 
-  public Integer getItemId() {
-    return itemId;
+  public Integer getStockFindIdentifier() {
+    return stockFindIdentifier;
   }
 }

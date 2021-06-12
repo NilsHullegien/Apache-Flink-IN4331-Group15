@@ -1,8 +1,11 @@
 package org.apache.flink.statefun.playground.java.greeter.types;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.flink.statefun.playground.java.greeter.types.Egress.EgressStockFind;
 import org.apache.flink.statefun.playground.java.greeter.types.Internal.*;
+import org.apache.flink.statefun.playground.java.greeter.types.Internal.InternalPaymentPay;
 import org.apache.flink.statefun.playground.java.greeter.types.Order.*;
+import org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentAddFunds;
 import org.apache.flink.statefun.playground.java.greeter.types.Stock.*;
 import org.apache.flink.statefun.playground.java.greeter.types.generated.UserProfile;
 import org.apache.flink.statefun.sdk.java.TypeName;
@@ -90,9 +93,27 @@ public final class Types {
           JSON_OBJ_MAPPER::writeValueAsBytes,
           bytes -> JSON_OBJ_MAPPER.readValue(bytes, OrderRemoveItem.class));
 
-  /** INTERNAL */
+  public static final Type<OrderPaymentStatus> PAYMENT_STATUS_JSON_TYPE =
+      SimpleType.simpleImmutableTypeFrom(
+          TypeName.typeNameOf(TYPES_NAMESPACE, OrderPaymentStatus.class.getName()),
+          JSON_OBJ_MAPPER::writeValueAsBytes,
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, OrderPaymentStatus.class));
 
-  /** CHECKOUT */
+  /** PAYMENT */
+  public static final Type<PaymentAddFunds> PAYMENT_ADD_FUNDS_JSON_TYPE =
+      SimpleType.simpleImmutableTypeFrom(
+          TypeName.typeNameOf(TYPES_NAMESPACE, PaymentAddFunds.class.getName()),
+          JSON_OBJ_MAPPER::writeValueAsBytes,
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, PaymentAddFunds.class));
+
+  /** This one is actually an internal message */
+  public static final Type<InternalPaymentPay> INTERNAL_PAYMENT_PAY_JSON_TYPE =
+      SimpleType.simpleImmutableTypeFrom(
+          TypeName.typeNameOf(TYPES_NAMESPACE, InternalPaymentPay.class.getName()),
+          JSON_OBJ_MAPPER::writeValueAsBytes,
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalPaymentPay.class));
+
+  /** INTERNAL (CHECKOUT) */
   public static final Type<InternalStockCheckoutCallback> INTERNAL_STOCK_CHECKOUT_CALLBACK =
       SimpleType.simpleImmutableTypeFrom(
           TypeName.typeNameOf(TYPES_NAMESPACE, InternalStockCheckoutCallback.class.getName()),
@@ -104,4 +125,28 @@ public final class Types {
           TypeName.typeNameOf(TYPES_NAMESPACE, InternalStockSubtract.class.getName()),
           JSON_OBJ_MAPPER::writeValueAsBytes,
           bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalStockSubtract.class));
+
+  public static final Type<InternalOrderIsPaid> INTERNAL_ORDER_IS_PAID =
+      SimpleType.simpleImmutableTypeFrom(
+          TypeName.typeNameOf(TYPES_NAMESPACE, InternalOrderIsPaid.class.getName()),
+          JSON_OBJ_MAPPER::writeValueAsBytes,
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalOrderIsPaid.class));
+
+  public static final Type<InternalPaymentCancel> INTERNAL_PAYMENT_CANCEL =
+      SimpleType.simpleImmutableTypeFrom(
+          TypeName.typeNameOf(TYPES_NAMESPACE, InternalPaymentCancel.class.getName()),
+          JSON_OBJ_MAPPER::writeValueAsBytes,
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalPaymentCancel.class));
+
+  public static final Type<InternalOrderPay> INTERNAL_ORDER_PAY =
+      SimpleType.simpleImmutableTypeFrom(
+          TypeName.typeNameOf(TYPES_NAMESPACE, InternalOrderPay.class.getName()),
+          JSON_OBJ_MAPPER::writeValueAsBytes,
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalOrderPay.class));
+
+  public static final Type<EgressStockFind> EGRESS_STOCK_FIND =
+      SimpleType.simpleImmutableTypeFrom(
+          TypeName.typeNameOf(TYPES_NAMESPACE, EgressStockFind.class.getName()),
+          JSON_OBJ_MAPPER::writeValueAsBytes,
+          bytes -> JSON_OBJ_MAPPER.readValue(bytes, EgressStockFind.class));
 }

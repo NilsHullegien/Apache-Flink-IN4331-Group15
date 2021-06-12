@@ -33,13 +33,14 @@ import org.apache.flink.statefun.sdk.java.handler.RequestReplyHandler;
  */
 public final class GreeterAppServer {
 
-	public static void main(String[] args) {
-		System.out.println("STARTING GreeterAppServer");
-		final StatefulFunctions functions = new StatefulFunctions();
-		functions.withStatefulFunction(UserFn.SPEC);
-		functions.withStatefulFunction(GreetingsFn.SPEC);
-		functions.withStatefulFunction(StockFn.SPEC);
-		functions.withStatefulFunction(OrderFn.SPEC);
+  public static void main(String[] args) {
+    System.out.println("STARTING GreeterAppServer");
+    final StatefulFunctions functions = new StatefulFunctions();
+    functions.withStatefulFunction(UserFn.SPEC);
+    functions.withStatefulFunction(GreetingsFn.SPEC);
+    functions.withStatefulFunction(StockFn.SPEC);
+    functions.withStatefulFunction(OrderFn.SPEC);
+    functions.withStatefulFunction(PaymentFn.SPEC);
 
 		final RequestReplyHandler requestReplyHandler = functions.requestReplyHandler();
 		final Undertow httpServer =
