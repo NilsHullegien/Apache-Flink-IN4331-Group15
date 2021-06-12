@@ -19,8 +19,8 @@ COPY src /usr/src/app/src
 COPY pom.xml /usr/src/app
 COPY web /usr/src/web
 COPY /web/pom.xml /usr/src/web
-RUN mvn -f /usr/src/app/pom.xml package
-RUN mvn -f /usr/src/web/pom.xml install
+RUN --mount=type=cache,target=/root/.m2 mvn -f /usr/src/app/pom.xml package
+RUN --mount=type=cache,target=/root/.m2 mvn -f /usr/src/web/pom.xml package
 
 # ... and run the web server!
 FROM openjdk:8

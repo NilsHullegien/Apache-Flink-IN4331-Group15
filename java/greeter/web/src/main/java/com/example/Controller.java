@@ -45,28 +45,28 @@ public class Controller {
 	private KafkaTemplate<Object, Object> template;
 
 	public void defferedReturn(DeferredResult<ResponseEntity<?>> output, String order_id) {
-		while (dict.get(order_id) == "") {
+		while (dict.get(order_id).equals("")) {
 			try {
 				TimeUnit.SECONDS.sleep(1);
 			}
 			catch (Exception e){
-				System.out.println("--------EXEPTION----------");
+				System.out.println("--------EXCEPTION----------");
 			}
 		}
 		output.setResult(ResponseEntity.ok(dict.get(order_id)));
 	}
 
-	@KafkaListener(groupId = "OrderGroup", id = "OrderGroupReceive", topics = "create-order-receive")	
+	@KafkaListener(groupId = "OrderGroup", id = "OrderGroupReceive", topics = "create-order-receive")
 	public void listenCreate(String order_id) {
 		dict.put(order_id, order_id);
 	}
 
-	@KafkaListener(groupId = "OrderGroup", id = "OrderCheckoutReceive", topics = "checkout-receive")	
+	@KafkaListener(groupId = "OrderGroup", id = "OrderCheckoutReceive", topics = "checkout-receive")
 	public void listen2Create(String order_id) {
 		dict.put(order_id, order_id);
 	}
 
-	@KafkaListener(groupId = "OrderGroup", id = "OrderFindReceive", topics = "find-receive")	
+	@KafkaListener(groupId = "OrderGroup", id = "OrderFindReceive", topics = "find-receive")
 	public void listen3Create(String order_id) {
 		dict.put(order_id, order_id);
 	}
@@ -82,7 +82,7 @@ public class Controller {
 		ForkJoinPool.commonPool().submit(() -> {
 			defferedReturn(output, user_id + "");
 		});
-		
+
 		return "{\"order_id\":" + order_id + "}";
 	}
 
@@ -103,7 +103,7 @@ public class Controller {
 			defferedReturn(output, order_id + "");
 		});
 
-		return output;	
+		return output;
 	}
 
 	//Post - adds a given item in the order given
@@ -129,7 +129,7 @@ public class Controller {
 			defferedReturn(output, order_id + "");
 		});
 
-		return output;	
+		return output;
 	}
 
 	//GET - retrieves the information of an item in stock
@@ -143,7 +143,7 @@ public class Controller {
 			defferedReturn(output, item_id + "");
 		});
 
-		return output;	
+		return output;
 	}
 
 	//GET - creates a item in the stock
@@ -158,9 +158,9 @@ public class Controller {
 			defferedReturn(output, item_id + "");
 		});
 
-		return output;	
+		return output;
 	}
-	
+
 	//Post - add an item form the stock by the given amount
 	@PostMapping(path = "/stock/add/{item_id}/{number_add}")
 	public void addItemStock(@PathVariable Integer item_id, @PathVariable Integer number_add) {
@@ -173,18 +173,18 @@ public class Controller {
 		this.template.send("stock-subtract", item_id + "", "{\"number_subtract\":\"" + number_subtract + "\"}");
 	}
 
-	//Get - get payed status of an order 
+	//Get - get payed status of an order
 	@GetMapping(path = "/payment/status/{order_id}")
 	public DeferredResult<ResponseEntity<?>> statusPayment(@PathVariable Integer order_id) {
 		this.template.send("payment-status", order_id + "");
-		
+
 		dict.put(order_id + "", "");
 		DeferredResult<ResponseEntity<?>> output = new DeferredResult<>();
 		ForkJoinPool.commonPool().submit(() -> {
 			defferedReturn(output, order_id + "");
 		});
 
-		return output;	
+		return output;
 	}
 
 	//Get - add funds to user his account
