@@ -1,0 +1,168 @@
+################################################################################
+#  Licensed to the Apache Software Foundation (ASF) under one
+#  or more contributor license agreements.  See the NOTICE file
+#  distributed with this work for additional information
+#  regarding copyright ownership.  The ASF licenses this file
+#  to you under the Apache License, Version 2.0 (the
+#  "License"); you may not use this file except in compliance
+#  with the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
+version: "2.1"
+
+services:
+
+  ###############################################################
+  #    Functions service
+  ###############################################################
+
+  greeter-functions:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    expose:
+      - "1108"
+    links:
+      - "statefun-manager:statefun-manager"
+      - "kafka:kafka"
+      - "zookeeper:zookeeper"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+    networks:
+      testing_net:
+        ipv4_address: 172.28.1.1
+    environment:
+      APP_KAFKA_HOST: kafka:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LISTENERS: kafka:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: kafka:9092
+
+  ###############################################################
+  #    StateFun runtime
+  ###############################################################
+
+  statefun-manager:
+    image: apache/flink-statefun:3.0.0-java11
+    expose:
+      - "6123"
+    ports:
+      - "8081:8081"
+    environment:
+      ROLE: master
+      MASTER_HOST: statefun-manager
+    volumes:
+      - ./module.yaml:/opt/statefun/modules/greeter/module.yaml
+    networks:
+      testing_net:
+        ipv4_address: 172.28.1.2
+
+  statefun-worker:
+    image: apache/flink-statefun:3.0.0-java11
+    expose:
+      - "6121"
+      - "6122"
+    depends_on:
+      - statefun-manager
+      - kafka
+      - greeter-functions
+    links:
+      - "statefun-manager:statefun-manager"
+      - "kafka:kafka"
+      - "greeter-functions:greeter-functions"
+    environment:
+      ROLE: worker
+      MASTER_HOST: statefun-manager
+    volumes:
+      - ./module.yaml:/opt/statefun/modules/greeter/module.yaml
+    networks:
+      testing_net:
+        ipv4_address: 172.28.1.3
+
+  ###############################################################
+  #    Kafka for ingress and egress
+  ###############################################################
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.4.3
+    environment:
+      ZOOKEEPER_CLIENT_PORT: "2181"
+    ports:
+      - "2181:2181"
+    networks:
+      testing_net:
+        ipv4_address: 172.28.1.4
+
+  kafka:
+    image: confluentinc/cp-kafka:5.4.3
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    links:
+      - "zookeeper:zookeeper"
+    networks:
+      testing_net:
+        ipv4_address: 172.28.1.5
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+networks:
+  testing_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+
+
+  ###############################################################
+  #    Simple Kafka JSON producer to simulate ingress events
+  ###############################################################
+
+#  user-logins-producer:
+#    image: ververica/statefun-playground-producer:latest
+#    depends_on:
+#      - kafka
+#      - statefun-worker
+#    links:
+#      - "kafka:kafka"
+#    environment:
+#      APP_PATH: /mnt/user-logins.txt
+#      APP_KAFKA_HOST: kafka:9092
+#      APP_KAFKA_TOPIC: user-logins
+#      APP_JSON_PATH: user_id
+#    volumes:
+#      - ./user-logins.txt:/mnt/user-logins.txt
+
+
+
+#version: '2'
+#services:
+#  zookeeper:
+#    image: wurstmeister/zookeeper
+#    ports:
+#      - "2181:2181"
+#  kafka:
+#    image: wurstmeister/kafka
+#    ports:
+#      - "9092:9092"
+#    environment:
+#      KAFKA_ADVERTISED_HOST_NAME: 127.0.0.1
+#      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+#      KAFKA_CREATE_TOPICS: "test_topic:1:3"
+
+
