@@ -8,6 +8,10 @@ public final class OrderDelete {
 
   public OrderDelete() {}
 
+  public OrderDelete(Integer orderId) {
+    this.orderId = orderId;
+  }
+
   public Integer getOrderId() {
     return orderId;
   }

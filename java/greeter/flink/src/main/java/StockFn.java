@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.flink.statefun.sdk.java.*;
+import org.apache.flink.statefun.sdk.java.io.KafkaEgressMessage;
 import org.apache.flink.statefun.sdk.java.message.Message;
 import org.apache.flink.statefun.sdk.java.message.MessageBuilder;
 import org.apache.flink.statefun.sdk.java.types.SimpleType;
@@ -57,14 +58,14 @@ final class StockFn implements StatefulFunction {
       Product product = getProductFromMessage(context);
 
       EgressStockFind egressMessage =
-          new EgressStockFind(product.quantity, product.price + product.quantity);
+          new EgressStockFind(product.getQuantity(), product.getPrice());
 
-//      context.send(
-//          KafkaEgressMessage.forEgress(KAFKA_EGRESS)
-//              .withTopic("egress-stock-find")
-//              .withUtf8Key(stockFindMessage.getStockFindIdentifier().toString())
-//              .withValue(EGRESS_STOCK_FIND, egressMessage)
-//              .build());
+      context.send(
+          KafkaEgressMessage.forEgress(KAFKA_EGRESS)
+              .withTopic("egress-stock-find")
+              .withUtf8Key(stockFindMessage.getStockFindIdentifier().toString())
+              .withValue(EGRESS_STOCK_FIND, egressMessage)
+              .build());
 
       // TODO: EGRESS
       System.out.println("Price: " + product.price + ", Quantity: " + product.quantity);
@@ -98,8 +99,9 @@ final class StockFn implements StatefulFunction {
 
       final StockItemCreate stockItemCreateMessage = message.as(STOCK_ITEM_CREATE_JSON_TYPE);
       if (!context.storage().get(PRODUCT).isPresent()) {
-        context.storage().set(PRODUCT, new Product(stockItemCreateMessage.getPrice(), 0));
         System.out.println("Added new product ID to stock");
+        System.out.println("PRICE: " + stockItemCreateMessage.getPrice());
+        context.storage().set(PRODUCT, new Product(stockItemCreateMessage.getPrice(), 0));
       } else {
         System.out.println("Trying to add product at already existing ID");
       }

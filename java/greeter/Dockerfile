@@ -8,8 +8,8 @@ COPY flink/src /usr/src/app/src
 COPY flink/pom.xml /usr/src/app
 COPY web /usr/src/web
 COPY /web/pom.xml /usr/src/web
-RUN mvn --mount=type=cache,target=/root/.m2 -f /usr/src/app/pom.xml package -DskipTests
-RUN mvn --mount=type=cache,target=/root/.m2 -f /usr/src/web/pom.xml package -DskipTests
+RUN mvn -f /usr/src/app/pom.xml package -DskipTests
+RUN mvn -f /usr/src/web/pom.xml package -DskipTests
 #--mount=type=cache,target=/root/.m2
 # ... and run the web server!
 FROM openjdk:8

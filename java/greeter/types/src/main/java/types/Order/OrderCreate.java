@@ -8,6 +8,10 @@ public final class OrderCreate {
 
   public OrderCreate() {}
 
+  public OrderCreate(Integer userId) {
+    this.userId = userId;
+  }
+
   public Integer getUserId() {
     return userId;
   }

@@ -5,8 +5,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
@@ -16,8 +14,6 @@ import org.springframework.util.backoff.FixedBackOff;
 
 @SpringBootApplication
 public class Application {
-
-	private final TaskExecutor exec = new SimpleAsyncTaskExecutor();
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);

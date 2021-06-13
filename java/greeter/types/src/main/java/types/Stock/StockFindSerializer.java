@@ -13,6 +13,7 @@ public class StockFindSerializer implements Serializer<StockFind> {
 
 	@Override
 	public byte[] serialize(String s, StockFind object) {
+		System.out.println("SERIALIZEREN KAN JE LEREN");
 		byte[] retVal = null;
 		ObjectMapper objectMapper = new ObjectMapper();
 		try {

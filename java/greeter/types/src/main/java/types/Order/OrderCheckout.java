@@ -8,6 +8,10 @@ public final class OrderCheckout {
 
   public OrderCheckout() {}
 
+  public OrderCheckout(Integer orderId) {
+    this.orderId = orderId;
+  }
+
   public Integer getOrderId() {
     return orderId;
   }

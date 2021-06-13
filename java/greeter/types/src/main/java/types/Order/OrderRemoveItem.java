@@ -9,6 +9,10 @@ public final class OrderRemoveItem {
 
   public OrderRemoveItem() {}
 
+  public OrderRemoveItem(Integer itemId) {
+    this.itemId = itemId;
+  }
+
   public Integer getItemId() {
     return itemId;
   }

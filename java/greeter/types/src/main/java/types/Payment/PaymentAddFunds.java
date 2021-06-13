@@ -9,6 +9,10 @@ public class PaymentAddFunds {
 
   public PaymentAddFunds() {}
 
+  public PaymentAddFunds(Integer amount) {
+    this.amount = amount;
+  }
+
   public Integer getAmount() {
     return amount;
   }

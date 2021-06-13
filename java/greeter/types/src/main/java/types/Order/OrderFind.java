@@ -8,6 +8,10 @@ public final class OrderFind {
 
   public OrderFind() {}
 
+  public OrderFind(Integer orderId) {
+    this.orderId = orderId;
+  }
+
   public Integer getOrderId() {
     return orderId;
   }

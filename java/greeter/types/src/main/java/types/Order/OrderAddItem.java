@@ -9,6 +9,10 @@ public final class OrderAddItem {
 
   public OrderAddItem() {}
 
+  public OrderAddItem(Integer itemId) {
+    this.itemId = itemId;
+  }
+
   public Integer getItemId() {
     return itemId;
   }

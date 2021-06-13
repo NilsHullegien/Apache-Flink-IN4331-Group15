@@ -41,15 +41,15 @@ module:
               type: earliest
             topics:
               - topic: stock-find
-                valueType: types/org.apache.flink.statefun.playground.java.types.org.apache.flink.statefun.playground.java.types.Stock.StockFind
+                valueType: types/types.Stock.StockFind
                 targets:
                   - greeter.fns/stock
               - topic: stock-subtract
-                valueType: types/org.apache.flink.statefun.playground.java.types.org.apache.flink.statefun.playground.java.types.Stock.StockSubtract
+                valueType: types/types.Stock.StockSubtract
                 targets:
                   - greeter.fns/stock
               - topic: stock-add
-                valueType: types/org.apache.flink.statefun.playground.java.types.org.apache.flink.statefun.playground.java.types.Stock.StockAdd
+                valueType: types/types.Stock.StockAdd
                 targets:
                   - greeter.fns/stock
               - topic: stock-item-create
@@ -70,27 +70,27 @@ module:
               type: earliest
             topics:
               - topic: order-add-item
-                valueType: types/org.apache.flink.statefun.playground.java.types.Order.OrderAddItem
+                valueType: types/types.Order.OrderAddItem
                 targets:
                   - greeter.fns/order
               - topic: order-checkout
-                valueType: types/org.apache.flink.statefun.playground.java.types.Order.OrderCheckout
+                valueType: types/types.Order.OrderCheckout
                 targets:
                   - greeter.fns/order
               - topic: order-delete
-                valueType: types/org.apache.flink.statefun.playground.java.types.Order.OrderDelete
+                valueType: types/types.Order.OrderDelete
                 targets:
                   - greeter.fns/order
               - topic: order-create
-                valueType: types/org.apache.flink.statefun.playground.java.types.Order.OrderCreate
+                valueType: types/types.Order.OrderCreate
                 targets:
                   - greeter.fns/order
               - topic: order-find
-                valueType: types/org.apache.flink.statefun.playground.java.types.Order.OrderFind
+                valueType: types/types.Order.OrderFind
                 targets:
                   - greeter.fns/order
               - topic: order-remove-item
-                valueType: types/org.apache.flink.statefun.playground.java.types.Order.OrderRemoveItem
+                valueType: types/types.Order.OrderRemoveItem
                 targets:
                   - greeter.fns/order
       - ingress:
@@ -107,18 +107,18 @@ module:
               type: earliest
             topics:
               - topic: payment-status
-                valueType: types/org.apache.flink.statefun.playground.java.types.Payment.PaymentStatus
+                valueType: types/types.Payment.PaymentStatus
                 targets:
                   - greeter.fns/payment
               - topic: payment-add-funds
-                valueType: types/org.apache.flink.statefun.playground.java.types.Payment.PaymentAddFunds
+                valueType: types/types.Payment.PaymentAddFunds
                 targets:
                   - greeter.fns/payment
     egresses:
       - egress:
           meta:
             type: io.statefun.kafka/egress
-            id: greeter.io/user-greetings
+            id: stock-namespace/stock
           spec:
             address: kafka:9092
             deliverySemantic:

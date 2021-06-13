@@ -8,6 +8,10 @@ public class OrderPaymentStatus {
 
   public OrderPaymentStatus() {}
 
+  public OrderPaymentStatus(Integer orderId) {
+    this.orderId = orderId;
+  }
+
   public Integer getOrderId() {
     return orderId;
   }
