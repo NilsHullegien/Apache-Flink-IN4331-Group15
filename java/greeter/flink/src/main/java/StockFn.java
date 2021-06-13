@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.concurrent.CompletableFuture;
 
-import org.apache.flink.statefun.playground.java.types.org.apache.flink.statefun.playground.java.types.Stock.StockItemCreate;
 import org.apache.flink.statefun.sdk.java.*;
 import org.apache.flink.statefun.sdk.java.message.Message;
 import org.apache.flink.statefun.sdk.java.message.MessageBuilder;
@@ -51,7 +50,7 @@ final class StockFn implements StatefulFunction {
   @Override
   public CompletableFuture<Void> apply(Context context, Message message) {
     if (message.is(STOCK_FIND_JSON_TYPE)) {
-      System.out.println("Apply org.apache.flink.statefun.playground.java.types.Stock Find");
+      System.out.println("Apply Stock Find");
 
       final StockFind stockFindMessage = message.as(STOCK_FIND_JSON_TYPE);
 
@@ -71,7 +70,7 @@ final class StockFn implements StatefulFunction {
       System.out.println("Price: " + product.price + ", Quantity: " + product.quantity);
 
     } else if (message.is(STOCK_SUBTRACT_JSON_TYPE)) { // Can go under 0
-      System.out.println("Apply org.apache.flink.statefun.playground.java.types.Stock Subtract TYPE");
+      System.out.println("Apply Stock Subtract TYPE");
 
       final StockSubtract stockSubtractMessage = message.as(STOCK_SUBTRACT_JSON_TYPE);
       Product product = getProductFromMessage(context);
@@ -82,7 +81,7 @@ final class StockFn implements StatefulFunction {
       System.out.println("Quantity after: " + product.getQuantity());
 
     } else if (message.is(STOCK_ADD_JSON_TYPE)) {
-      System.out.println("Apply org.apache.flink.statefun.playground.java.types.Stock Add");
+      System.out.println("Apply Stock Add");
 
       final StockAdd stockAddMessage = message.as(STOCK_ADD_JSON_TYPE);
 
@@ -95,7 +94,7 @@ final class StockFn implements StatefulFunction {
       context.storage().set(PRODUCT, product);
 
     } else if (message.is(STOCK_ITEM_CREATE_JSON_TYPE)) {
-      System.out.println("Apply org.apache.flink.statefun.playground.java.types.Stock Item Create");
+      System.out.println("Apply Stock Item Create");
 
       final StockItemCreate stockItemCreateMessage = message.as(STOCK_ITEM_CREATE_JSON_TYPE);
       if (!context.storage().get(PRODUCT).isPresent()) {

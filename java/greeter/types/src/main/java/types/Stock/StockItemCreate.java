@@ -1,4 +1,4 @@
-package org.apache.flink.statefun.playground.java.types.org.apache.flink.statefun.playground.java.types.Stock;
+package types.Stock;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -9,9 +9,6 @@ public final class StockItemCreate {
   public StockItemCreate() {}
 
   public StockItemCreate(Integer price) {
-    System.out.println("STOCK ITEM CREATING");
-    System.out.println(StockItemCreate.class.getCanonicalName());
-    System.out.println(StockItemCreate.class.getName());
     this.price = price;
   }
 

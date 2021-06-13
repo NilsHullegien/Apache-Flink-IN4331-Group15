@@ -53,7 +53,7 @@ module:
                 targets:
                   - greeter.fns/stock
               - topic: stock-item-create
-                valueType: types/org.apache.flink.statefun.playground.java.types.org.apache.flink.statefun.playground.java.types.Stock.StockItemCreate
+                valueType: types/types.Stock.StockItemCreate
                 targets:
                   - greeter.fns/stock
       - ingress:
