@@ -1,6 +1,7 @@
 package types;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.flink.statefun.playground.java.types.org.apache.flink.statefun.playground.java.types.Stock.StockItemCreate;
 import org.apache.flink.statefun.sdk.java.TypeName;
 import org.apache.flink.statefun.sdk.java.types.SimpleType;
 import org.apache.flink.statefun.sdk.java.types.Type;

@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 import java.lang.*;
 import java.util.*;
 
+import org.apache.flink.statefun.playground.java.types.org.apache.flink.statefun.playground.java.types.Stock.StockItemCreate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -132,8 +133,9 @@ public class Controller {
     //GET - creates a item in the stock
     @GetMapping(path = "/stock/item/create/{price}")
     public DeferredResult<ResponseEntity<?>> createStock(@PathVariable Integer price) {
+        StockItemCreate message = new StockItemCreate(price);
         item_id++;
-        this.template.send("stock-item-create", String.valueOf(item_id), "{\"price\":\"" + price + "\"}");
+        this.template.send("stock-item-create", String.valueOf(item_id), message);
         return deffer(String.valueOf(item_id));
     }
 
