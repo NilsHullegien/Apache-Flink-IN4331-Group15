@@ -19,17 +19,22 @@ under the License.
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <modules>
+        <module>types</module>
+        <module>web</module>
+        <module>flink</module>
+    </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.3.1.RELEASE</version>
+        <artifactId>spring-boot-starter-parent</artifactId>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>org.apache.flink</groupId>
-    <artifactId>greeter-functions-app</artifactId>
-    <version>3.0.0</version>
-    <packaging>jar</packaging>
+    <groupId>com.tudelft.flink.statefun</groupId>
+    <version>1.0.0</version>
+    <artifactId>statefun-flink-app</artifactId>
+    <packaging>pom</packaging>
 
     <properties>
         <statefun.version>3.0.0</statefun.version>
@@ -38,102 +43,19 @@ under the License.
     </properties>
 
     <dependencies>
-        <!-- StateFun Java SDK -->
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>statefun-sdk-java</artifactId>
-            <version>${statefun.version}</version>
-        </dependency>
-
-        <!-- For custom type serialization (JSON and Protobuf) -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.12.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.12.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>2.12.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>3.11.4</version>
-        </dependency>
-
-        <!-- Undertow web server -->
-        <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-core</artifactId>
-            <version>1.4.18.Final</version>
-        </dependency>
-
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <!-- Build a fat executable jar -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.3.0</version>
-                <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <mainClass>org.apache.flink.statefun.playground.java.greeter.GreeterAppServer</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Protoc plugin to auto-generate Protobuf message files -->
-            <plugin>
-                <groupId>com.github.os72</groupId>
-                <artifactId>protoc-jar-maven-plugin</artifactId>
-                <version>3.11.1</version>
-                <executions>
-                    <execution>
-                        <id>generate-protobuf-sources</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <includeStdTypes>true</includeStdTypes>
-                            <protocVersion>3.11.4</protocVersion>
-                            <cleanOutputFolder>true</cleanOutputFolder>
-                            <outputDirectory>${basedir}/target/generated-sources/protoc-jar</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>

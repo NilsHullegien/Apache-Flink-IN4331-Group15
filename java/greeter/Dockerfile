@@ -1,26 +1,15 @@
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# Build the functions code ...
+# Build the TYPES package
 FROM maven:3.6.3-jdk-11 AS builder
-COPY src /usr/src/app/src
-COPY pom.xml /usr/src/app
+COPY types/src /usr/src/types/src
+COPY types/pom.xml /usr/src/types
+RUN --mount=type=cache,target=/root/.m2 mvn -f /usr/src/types/pom.xml install -DskipTests
+
+COPY flink/src /usr/src/app/src
+COPY flink/pom.xml /usr/src/app
 COPY web /usr/src/web
 COPY /web/pom.xml /usr/src/web
-RUN --mount=type=cache,target=/root/.m2 mvn -f /usr/src/app/pom.xml package
-RUN --mount=type=cache,target=/root/.m2 mvn -f /usr/src/web/pom.xml package
+RUN --mount=type=cache,target=/root/.m2 mvn -f /usr/src/app/pom.xml package -DskipTests
+RUN --mount=type=cache,target=/root/.m2 mvn -f /usr/src/web/pom.xml package -DskipTests
 
 # ... and run the web server!
 FROM openjdk:8
@@ -30,3 +19,4 @@ COPY --from=builder /usr/src/web/target/kafka-sample-01*.jar webserver.jar
 
 EXPOSE 1108 8080
 CMD java -jar greeter-functions-app.jar & java -jar webserver.jar
+#CMD java -jar webserver.jar

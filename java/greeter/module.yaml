@@ -41,19 +41,19 @@ module:
               type: earliest
             topics:
               - topic: stock-find
-                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Stock.StockFind
+                valueType: types/org.apache.flink.statefun.playground.java.types.org.apache.flink.statefun.playground.java.types.Stock.StockFind
                 targets:
                   - greeter.fns/stock
               - topic: stock-subtract
-                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Stock.StockSubtract
+                valueType: types/org.apache.flink.statefun.playground.java.types.org.apache.flink.statefun.playground.java.types.Stock.StockSubtract
                 targets:
                   - greeter.fns/stock
               - topic: stock-add
-                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Stock.StockAdd
+                valueType: types/org.apache.flink.statefun.playground.java.types.org.apache.flink.statefun.playground.java.types.Stock.StockAdd
                 targets:
                   - greeter.fns/stock
               - topic: stock-item-create
-                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Stock.StockItemCreate
+                valueType: types/org.apache.flink.statefun.playground.java.types.org.apache.flink.statefun.playground.java.types.Stock.StockItemCreate
                 targets:
                   - greeter.fns/stock
       - ingress:
@@ -70,27 +70,27 @@ module:
               type: earliest
             topics:
               - topic: order-add-item
-                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Order.OrderAddItem
+                valueType: types/org.apache.flink.statefun.playground.java.types.Order.OrderAddItem
                 targets:
                   - greeter.fns/order
               - topic: order-checkout
-                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Order.OrderCheckout
+                valueType: types/org.apache.flink.statefun.playground.java.types.Order.OrderCheckout
                 targets:
                   - greeter.fns/order
               - topic: order-delete
-                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Order.OrderDelete
+                valueType: types/org.apache.flink.statefun.playground.java.types.Order.OrderDelete
                 targets:
                   - greeter.fns/order
               - topic: order-create
-                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Order.OrderCreate
+                valueType: types/org.apache.flink.statefun.playground.java.types.Order.OrderCreate
                 targets:
                   - greeter.fns/order
               - topic: order-find
-                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Order.OrderFind
+                valueType: types/org.apache.flink.statefun.playground.java.types.Order.OrderFind
                 targets:
                   - greeter.fns/order
               - topic: order-remove-item
-                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Order.OrderRemoveItem
+                valueType: types/org.apache.flink.statefun.playground.java.types.Order.OrderRemoveItem
                 targets:
                   - greeter.fns/order
       - ingress:
@@ -107,11 +107,11 @@ module:
               type: earliest
             topics:
               - topic: payment-status
-                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentStatus
+                valueType: types/org.apache.flink.statefun.playground.java.types.Payment.PaymentStatus
                 targets:
                   - greeter.fns/payment
               - topic: payment-add-funds
-                valueType: greeter.types/org.apache.flink.statefun.playground.java.greeter.types.Payment.PaymentAddFunds
+                valueType: types/org.apache.flink.statefun.playground.java.types.Payment.PaymentAddFunds
                 targets:
                   - greeter.fns/payment
     egresses:
