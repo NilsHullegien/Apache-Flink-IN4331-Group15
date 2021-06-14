@@ -48,7 +48,7 @@ public class Controller {
 
     public void defferedReturn(DeferredResult<ResponseEntity<?>> output, Integer key) {
         while (!dict.containsKey(key)) {
-            System.out.println("WAITING for key: " + key + " in dict " + dict);
+            //System.out.println("WAITING for key: " + key + " in dict " + dict);
             try {
                 TimeUnit.MILLISECONDS.sleep(100);
             } catch (Exception e) {
@@ -61,50 +61,41 @@ public class Controller {
         output.setResult(ResponseEntity.ok(outputString));
         dict.remove(key);
     }
-//
-//    @KafkaListener(groupId = "group", id = "create-order-receive", topics = "create-order-receive")
-//    public void listen1Create(@Payload String message, @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) Integer key) {
-//        dict.put(String.valueOf(key), message);
-//    }
-//
-//    @KafkaListener(groupId = "group", id = "checkout-receive", topics = "checkout-receive")
-//    public void listen2Create(@Payload String message, @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) Integer key) {
-//        dict.put(String.valueOf(key), message);
-//    }
-//
-//    @KafkaListener(groupId = "group", id = "find-receive", topics = "find-receive")
-//    public void listen3Create(@Payload String message, @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) Integer key) {
-//        dict.put(String.valueOf(key), message);
-//    }
-//
-//    @KafkaListener(groupId = "group", id = "egress-stock-find", topics = "egress-stock-find")
-//    public void listen4Create(@Payload String message, @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) Integer key) {
-//        System.out.println("MESSAGE BACK HOLY FUCK WE KUNNEN EEN SOORT VAN IETS");
-//        dict.put(String.valueOf(key), message);
-//    }
 
-
-    @KafkaListener(id = "egress-stock-find", topics = "egress-stock-find")
-    public void listen (ConsumerRecord<Object, Object> data) {
-        System.out.println("LISTENING");
-        System.out.println(data);
-        System.out.println(data.value());
-        System.out.println(dict);
+    @KafkaListener(id = "egress-payment-add-funds", topics = "egress-payment-add-funds")
+    public void listenPaymentAddFunds (ConsumerRecord<Object, Object> data) {
         dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
     }
-//    @KafkaListener(id = "egress-stock-find", topics = "egress-stock-find")
-//    public void listen5Create()  {
-//        System.out.println("MESSAGE BACK HOLY FUCK WE KUNNEN EEN SOORT VAN IETS2");
-//        dict.put(String.valueOf(1), "test");
-//    }
+
+    @KafkaListener(id = "egress-payment-status", topics = "egress-payment-status")
+    public void listenPaymentStatus (ConsumerRecord<Object, Object> data) {
+        dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
+    }
+
+    @KafkaListener(id = "egress-stock-item-create", topics = "egress-stock-item-create")
+    public void listenItemCreate (ConsumerRecord<Object, Object> data) {
+        dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
+    }
+
+    @KafkaListener(id = "egress-order-create", topics = "egress-order-create")
+    public void listenOrderCreate (ConsumerRecord<Object, Object> data) {
+        dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
+    }
+
+    @KafkaListener(id = "egress-order-checkout", topics = "egress-order-checkout")
+    public void listenOrderCheckout (ConsumerRecord<Object, Object> data) {
+        dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
+    }
+
+    @KafkaListener(id = "egress-stock-find", topics = "egress-stock-find")
+    public void listenStockFind (ConsumerRecord<Object, Object> data) {
+        dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
+    }
 
     //Get - creates an order for the given user, and returns an order_id
     @GetMapping(path = "/orders/create/{user_id}")
     public String createOrder(@PathVariable Integer user_id) {
-        order_id++;
-        OrderCreate message = new OrderCreate(user_id);
-
-        this.template.send("order-create", String.valueOf(order_id), message);
+        this.template.send("order-create", String.valueOf(++order_id), new OrderCreate(user_id));
         deffer(String.valueOf(order_id));
 
         return "{\"order_id\":" + order_id + "}";
@@ -145,7 +136,6 @@ public class Controller {
     //GET - retrieves the information of an item in stock
     @GetMapping(path = "/stock/find/{item_id}")
     public DeferredResult<ResponseEntity<?>> findStock(@PathVariable Integer item_id) {
-        StockFind message = new StockFind(item_id);
         this.template.send("stock-find", String.valueOf(item_id), new StockFind(item_id));
         return deffer(String.valueOf(item_id));
     }
@@ -153,24 +143,7 @@ public class Controller {
     //GET - creates a item in the stock
     @GetMapping(path = "/stock/item/create/{price}")
     public DeferredResult<ResponseEntity<?>> createStock(@PathVariable Integer price) {
-        StockItemCreate message = new StockItemCreate(price);
-        item_id++;
-        this.template.send("stock-item-create", String.valueOf(item_id), message);
-//        ListenableFuture<SendResult<Object, Object>> future = this.template.send("stock-item-create", String.valueOf(item_id), message);
-//        future.addCallback(new KafkaSendCallback<Object, Object>() {
-//            @Override
-//            public void onSuccess(SendResult<Object, Object> result) {
-//                System.out.println("GREAT SUCCESS");
-//                System.out.println(result.getProducerRecord());
-//                System.out.println(result.getRecordMetadata());
-//            }
-//
-//            @Override
-//            public void onFailure(KafkaProducerException ex) {
-//                System.out.println("FAILURE");
-//                ex.printStackTrace();
-//            }
-//        });
+        this.template.send("stock-item-create", String.valueOf(++item_id), new StockItemCreate(price));
         return deffer(String.valueOf(item_id));
     }
 
