@@ -50,7 +50,7 @@ public class Controller {
         while (!dict.containsKey(key)) {
             ////System.out.println("WAITING for key: " + key + " in dict " + dict);
             try {
-                TimeUnit.MILLISECONDS.sleep(50);
+                TimeUnit.MILLISECONDS.sleep(5);
             } catch (Exception e) {
                 ////System.out.println("Deffered return exception");
             }
@@ -191,7 +191,7 @@ public class Controller {
 
     //Post - add funds to user his account
     @PostMapping(path = "/payment/add_funds/{user_id}/{amount}")
-    public DeferredResult<ResponseEntity<?>> addPayment(@PathVariable Integer user_id, @PathVariable Integer amount) {
+    public DeferredResult<ResponseEntity<?>> addPayment(@PathVariable Integer user_id, @PathVariable Float amount) {
         Integer uId = rand.nextInt();
         this.template.send("payment-add-funds", String.valueOf(user_id), new PaymentAddFunds(uId, amount));
         return deffer(uId);

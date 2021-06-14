@@ -16,4 +16,11 @@ public final class StockFind {
   public Integer getUId() {
       return uId;
   }
+
+  @Override
+  public String toString() {
+    return "StockFind{" +
+        "uId=" + uId +
+        '}';
+  }
 }

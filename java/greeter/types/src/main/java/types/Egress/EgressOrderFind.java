@@ -19,11 +19,11 @@ public class EgressOrderFind {
   private Integer user_id;
 
   @JsonProperty("total_cost")
-  private Integer total_cost;
+  private Float total_cost;
 
   public EgressOrderFind() {}
 
-  public EgressOrderFind(Integer order_id, Boolean paid, HashMap<Integer, Integer> items, Integer user_id, Integer total_cost) {
+  public EgressOrderFind(Integer order_id, Boolean paid, HashMap<Integer, Integer> items, Integer user_id, Float total_cost) {
     this.order_id = order_id;
     this.paid = paid;
     this.items = items;
@@ -47,7 +47,7 @@ public class EgressOrderFind {
     return user_id;
   }
 
-  public Integer getTotal_cost() {
+  public Float getTotal_cost() {
     return total_cost;
   }
 }

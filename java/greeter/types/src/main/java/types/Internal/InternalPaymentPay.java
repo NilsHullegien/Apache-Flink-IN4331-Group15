@@ -4,15 +4,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class InternalPaymentPay {
   @JsonProperty("pay_amount")
-  private Integer payAmount;
+  private Float payAmount;
 
   public InternalPaymentPay() {}
 
-  public InternalPaymentPay(int payAmount) {
+  public InternalPaymentPay(Float payAmount) {
     this.payAmount = payAmount;
   }
 
-  public Integer getPayAmount() {
+  public Float getPayAmount() {
     return payAmount;
   }
 }

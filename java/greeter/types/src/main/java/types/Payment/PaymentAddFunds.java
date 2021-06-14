@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class PaymentAddFunds {
 
     @JsonProperty("amount")
-    private Integer amount;
+    private Float amount;
 
     @JsonProperty("uid")
     private Integer uId;
@@ -15,12 +15,12 @@ public class PaymentAddFunds {
     public PaymentAddFunds() {
     }
 
-    public PaymentAddFunds(Integer uId, Integer amount) {
+    public PaymentAddFunds(Integer uId, Float amount) {
         this.uId = uId;
         this.amount = amount;
     }
 
-    public Integer getAmount() {
+    public Float getAmount() {
         return amount;
     }
 

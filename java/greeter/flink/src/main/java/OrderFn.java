@@ -51,7 +51,7 @@ final class OrderFn implements StatefulFunction {
     private static final ValueSpec<Integer> UID =
             ValueSpec.named("uid").withIntType();
 
-    private static final ValueSpec<Integer> ORDER_COST = ValueSpec.named("order_cost").withIntType();
+    private static final ValueSpec<Float> ORDER_COST = ValueSpec.named("order_cost").withFloatType();
 
     static final TypeName TYPENAME = TypeName.typeNameOf("greeter.fns", "order");
     static final StatefulFunctionSpec SPEC =
@@ -91,7 +91,7 @@ final class OrderFn implements StatefulFunction {
 
                 OrderFind orderFindMessage = message.as(ORDER_FIND_JSON_TYPE);
 
-                context.storage().set(ORDER_COST, 0);
+                context.storage().set(ORDER_COST, 0.0f);
                 context.storage().set(UID, orderFindMessage.getUId());
 
                 Order order = getOrderFromMessage(context);
@@ -101,7 +101,7 @@ final class OrderFn implements StatefulFunction {
 
                 if (order.getItems().isEmpty()) {
                     EgressOrderFind egressMessage =
-                            new EgressOrderFind(order.getOrderId(), order.isPaid(), order.getItems(), order.getUserId(), 0);
+                            new EgressOrderFind(order.getOrderId(), order.isPaid(), order.getItems(), order.getUserId(), 0.0f);
 
                     context.send(
                             KafkaEgressMessage.forEgress(KAFKA_EGRESS)
@@ -161,7 +161,7 @@ final class OrderFn implements StatefulFunction {
 
                 OrderCheckout orderCheckoutMessage = message.as(ORDER_CHECKOUT_JSON_TYPE);
 
-                context.storage().set(ORDER_COST, 0);
+                context.storage().set(ORDER_COST, 0.0f);
                 context.storage().set(UID, orderCheckoutMessage.getUId());
 
                 int stock_poll_out = context.storage().get(STOCK_POLL_OUT).orElse(0);
@@ -231,7 +231,7 @@ final class OrderFn implements StatefulFunction {
                         .storage()
                         .set(
                                 ORDER_COST,
-                                context.storage().get(ORDER_COST).orElse(0) + internalMessage.getSummedCost());
+                                context.storage().get(ORDER_COST).orElse(0.0f) + internalMessage.getSummedCost());
 
                 if (internalMessage.isOk()) {
                     if (stockPollOut == 0
@@ -334,7 +334,7 @@ final class OrderFn implements StatefulFunction {
                         .storage()
                         .set(
                                 ORDER_COST,
-                                context.storage().get(ORDER_COST).orElse(0) + internalMessage.getSummed_cost());
+                                context.storage().get(ORDER_COST).orElse(0.0f) + internalMessage.getSummed_cost());
 
                 if (stockPollOut == 0) { // Last message was received, we can stop now
                     ////System.out.println("All stock (find callback) has been approved");
@@ -350,7 +350,7 @@ final class OrderFn implements StatefulFunction {
                     // TODO: should be handled by web server
                     EgressOrderFind egressMessage =
                             new EgressOrderFind(order.getOrderId(), order.isPaid(), order.getItems(), order.getUserId(),
-                                    context.storage().get(ORDER_COST).orElse(-1));
+                                    context.storage().get(ORDER_COST).orElse(-1.0f));
 
                     context.send(
                             KafkaEgressMessage.forEgress(KAFKA_EGRESS)

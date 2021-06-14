@@ -4,12 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class EgressPaymentFindUser {
 	@JsonProperty("credit")
-	private Integer credit;
+	private Float credit;
 
 	public EgressPaymentFindUser() {
 	}
 
-	public EgressPaymentFindUser(Integer credit) {
+	public EgressPaymentFindUser(Float credit) {
 		this.credit = credit;
 	}
 

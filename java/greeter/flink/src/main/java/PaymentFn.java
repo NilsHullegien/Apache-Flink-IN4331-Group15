@@ -113,7 +113,7 @@ final class PaymentFn implements StatefulFunction {
             ////System.out.println("find user type");
 
             EgressPaymentFindUser egressMessage =
-                    new EgressPaymentFindUser(getUser(context).funds);
+                    new EgressPaymentFindUser(getUser(context).getFunds());
 
             context.send(
                     KafkaEgressMessage.forEgress(KAFKA_EGRESS)
@@ -150,19 +150,23 @@ final class PaymentFn implements StatefulFunction {
                         bytes -> mapper.readValue(bytes, User.class));
 
         @JsonProperty("funds")
-        private int funds;
+        private Float funds;
 
         @JsonCreator
         public User() {
-            this.funds = 0;
+            this.funds = 0.0f;
         }
 
-        public void add(int addFunds) {
+        public void add(Float addFunds) {
             this.funds += addFunds;
         }
 
-        public void remove(int removeFunds) {
+        public void remove(Float removeFunds) {
             this.funds -= removeFunds;
+        }
+
+        public Float getFunds() {
+            return this.funds;
         }
     }
 }
