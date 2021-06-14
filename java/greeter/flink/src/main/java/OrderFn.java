@@ -31,15 +31,13 @@ import org.apache.flink.statefun.sdk.java.message.MessageBuilder;
 import org.apache.flink.statefun.sdk.java.types.SimpleType;
 import org.apache.flink.statefun.sdk.java.types.Type;
 import types.Egress.EgressOrderFind;
+import types.Egress.EgressPaymentStatus;
 import types.Egress.EgressStockFind;
 import types.Internal.InternalOrderPay;
 import types.Internal.InternalPaymentPay;
 import types.Internal.InternalStockCheckoutCallback;
 import types.Internal.InternalStockSubtract;
-import types.Order.OrderAddItem;
-import types.Order.OrderCreate;
-import types.Order.OrderFind;
-import types.Order.OrderRemoveItem;
+import types.Order.*;
 import types.Stock.StockAdd;
 import types.Stock.StockFind;
 
@@ -165,7 +163,6 @@ final class OrderFn implements StatefulFunction {
                     .build());
           }
         }
-
       } else if (message.is(INTERNAL_ORDER_IS_PAID)) {
         System.out.println("Apply Order Internal Is Paid");
         Order order = getOrderFromMessage(context);
@@ -190,6 +187,19 @@ final class OrderFn implements StatefulFunction {
         //				}
         //				//GET TOTAL COST OF ORDER
 
+      } else if (message.is(ORDER_PAYMENT_STATUS_JSON_TYPE)) {
+        OrderPaymentStatus orderPaymentStatus = message.as(ORDER_PAYMENT_STATUS_JSON_TYPE);
+
+        Order order = getOrderFromMessage(context);
+        EgressPaymentStatus egressMessage =
+            new EgressPaymentStatus(order.isPaid());
+
+        context.send(
+            KafkaEgressMessage.forEgress(KAFKA_EGRESS)
+                .withTopic("egress-payment-status")
+                .withUtf8Key(orderPaymentStatus.getOrderId().toString())
+                .withValue(EGRESS_PAYMENT_STATUS, egressMessage)
+                .build());
       } else {
         System.out.println(
             "Couldnt identify message in Order (non checkout mode): "

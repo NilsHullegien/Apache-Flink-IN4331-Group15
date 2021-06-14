@@ -42,7 +42,7 @@ public class Controller {
 
     public void defferedReturn(DeferredResult<ResponseEntity<?>> output, Integer key) {
         while (!dict.containsKey(key)) {
-            System.out.println("WAITING for key: " + key + " in dict " + dict);
+//            System.out.println("WAITING for key: " + key + " in dict " + dict);
             try {
                 TimeUnit.MILLISECONDS.sleep(100);
             } catch (Exception e) {
@@ -149,7 +149,7 @@ public class Controller {
     @GetMapping(path = "/payment/status/{order_id}")
     public DeferredResult<ResponseEntity<?>> statusPayment(@PathVariable Integer order_id) {
         Integer uId = rand.nextInt();
-        this.template.send("payment-status", new PaymentStatus(uId, order_id));
+        this.template.send("payment-status", String.valueOf(order_id), new PaymentStatus(uId, order_id));
         return deffer(String.valueOf(uId));
     }
 

@@ -85,7 +85,7 @@ public final class Types {
 			JSON_OBJ_MAPPER::writeValueAsBytes,
 			bytes -> JSON_OBJ_MAPPER.readValue(bytes, OrderRemoveItem.class));
 
-	public static final Type<OrderPaymentStatus> PAYMENT_STATUS_JSON_TYPE =
+	public static final Type<OrderPaymentStatus> ORDER_PAYMENT_STATUS_JSON_TYPE =
 		SimpleType.simpleImmutableTypeFrom(
 			TypeName.typeNameOf(TYPES_NAMESPACE, OrderPaymentStatus.class.getName()),
 			JSON_OBJ_MAPPER::writeValueAsBytes,
@@ -147,6 +147,12 @@ public final class Types {
 			TypeName.typeNameOf(TYPES_NAMESPACE, EgressStockFind.class.getName()),
 			JSON_OBJ_MAPPER::writeValueAsBytes,
 			bytes -> JSON_OBJ_MAPPER.readValue(bytes, EgressStockFind.class));
+
+	public static final Type<EgressPaymentStatus> EGRESS_PAYMENT_STATUS =
+		SimpleType.simpleImmutableTypeFrom(
+			TypeName.typeNameOf(TYPES_NAMESPACE, EgressPaymentStatus.class.getName()),
+			JSON_OBJ_MAPPER::writeValueAsBytes,
+			bytes -> JSON_OBJ_MAPPER.readValue(bytes, EgressPaymentStatus.class));
 
 	public static final Type<EgressOrderFind> EGRESS_ORDER_FIND =
 			SimpleType.simpleImmutableTypeFrom(
