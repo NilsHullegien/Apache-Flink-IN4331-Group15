@@ -65,7 +65,7 @@ final class StockFn implements StatefulFunction {
       context.send(
           KafkaEgressMessage.forEgress(KAFKA_EGRESS)
               .withTopic("egress-stock-find")
-              .withUtf8Key(String.valueOf(stockFindMessage.getOrderUId()))
+              .withUtf8Key(String.valueOf(stockFindMessage.getUId()))
               .withValue(EGRESS_STOCK_FIND, egressMessage)
               .build());
 

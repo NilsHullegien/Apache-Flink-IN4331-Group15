@@ -1,27 +1,20 @@
 package types.Stock;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@JsonIgnoreProperties
 public final class StockFind {
-  @JsonProperty("stock_find_identifier")
-  private Integer stockFindIdentifier;
 
+  @JsonProperty("uid")
   private Integer uId;
 
   public StockFind() {}
 
-  public StockFind(Integer uId, Integer stockFindIdentifier) {
+  public StockFind(Integer uId) {
     this.uId = uId;
-    this.stockFindIdentifier = stockFindIdentifier;
   }
 
-  public Integer getStockFindIdentifier() {
-    return stockFindIdentifier;
-  }
-
-  public Integer getOrderUId() {
+  public Integer getUId() {
       return uId;
   }
 }
