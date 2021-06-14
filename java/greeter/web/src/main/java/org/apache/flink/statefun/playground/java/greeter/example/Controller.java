@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -60,11 +61,11 @@ public class Controller {
         if (outputObject instanceof EgressCheckoutStatus) {
             EgressCheckoutStatus outputEgressCheckoutStatus = (EgressCheckoutStatus) outputObject;
             if (outputEgressCheckoutStatus.getCheckout_status()) {
-                output.setResult(ResponseEntity.ok("success"));
+                output.setResult(ResponseEntity.ok(outputObject));
             } else {
-                output.setResult(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failure"));
+                output.setResult(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
             }
-        } else { 
+        } else {
             System.out.println("Didnt identify return obj");
 
             output.setResult(ResponseEntity.ok(outputObject));
@@ -99,7 +100,15 @@ public class Controller {
     public void listenOrderCheckout(ConsumerRecord<Object, Object> data) throws JsonProcessingException {
         System.out.println("RECEIVED MESSAGE");
         System.out.println(data);
-        dict.put(Integer.parseInt(data.key().toString()), new ObjectMapper().readValue(data.value().toString(), EgressCheckoutStatus.class));
+        EgressCheckoutStatus msg = new ObjectMapper().readValue(data.value().toString(), EgressCheckoutStatus.class);
+        if (msg.getCheckout_status()) {
+            //200
+            dict.put(Integer.parseInt(data.key().toString()), "success");
+        } else {
+            //error
+            dict.put(Integer.parseInt(data.key().toString()), "failure");
+
+        }
     }
 
     //POST - creates an order for the given user, and returns an order_id
