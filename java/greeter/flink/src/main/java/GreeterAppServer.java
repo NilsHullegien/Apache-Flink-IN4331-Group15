@@ -23,7 +23,7 @@ import undertow.UndertowHttpHandler;
 public final class GreeterAppServer {
 
   public static void main(String[] args) {
-    System.out.println("STARTING GreeterAppServer");
+//    //System.out.println("STARTING GreeterAppServer");
     final StatefulFunctions functions = new StatefulFunctions();
     functions.withStatefulFunction(StockFn.SPEC);
     functions.withStatefulFunction(OrderFn.SPEC);
@@ -35,7 +35,7 @@ public final class GreeterAppServer {
 				.addHttpListener(1108, "0.0.0.0")
 				.setHandler(new UndertowHttpHandler(requestReplyHandler))
 				.build();
-		System.out.println("Starting GreeterAppServer");
+//		//System.out.println("Starting GreeterAppServer");
 		httpServer.start();
 	}
 }

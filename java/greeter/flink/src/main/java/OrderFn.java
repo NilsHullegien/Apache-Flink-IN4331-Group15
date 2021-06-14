@@ -64,22 +64,22 @@ final class OrderFn implements StatefulFunction {
 
     @Override
     public CompletableFuture<Void> apply(Context context, Message message) {
-        System.out.println("IN CHECKOUT MODE: " + inCheckoutMode(context));
+//        ////System.out.println("IN CHECKOUT MODE: " + inCheckoutMode(context));
         if (!inCheckoutMode(context)) { // Accept external messages
 
             if (message.is(ORDER_CREATE_JSON_TYPE)) {
-                System.out.println("Apply Order Create");
+//                System.out.println("Apply Order Create");
 
                 final OrderCreate orderCreateMessage = message.as(ORDER_CREATE_JSON_TYPE);
                 if (!context.storage().get(ORDER).isPresent()) {
                     context.storage().set(ORDER, new Order(orderCreateMessage.getUserId()));
-                    System.out.println("Created order");
+//                    ////System.out.println("Created order");
                 } else {
-                    System.out.println("Order already existed");
+//                    ////System.out.println("Order already existed");
                 }
 
             } else if (message.is(ORDER_DELETE_JSON_TYPE)) {
-                System.out.println("Apply Order Remove");
+//                ////System.out.println("Apply Order Remove");
 
                 Order order = getOrderFromMessage(context);
                 order.delete();
@@ -87,7 +87,7 @@ final class OrderFn implements StatefulFunction {
                 context.storage().set(ORDER, order);
 
             } else if (message.is(ORDER_FIND_JSON_TYPE)) {
-                System.out.println("Find Order");
+//                ////System.out.println("Find Order");
 
                 OrderFind orderFindMessage = message.as(ORDER_FIND_JSON_TYPE);
 
@@ -97,7 +97,7 @@ final class OrderFn implements StatefulFunction {
                 Order order = getOrderFromMessage(context);
                 order.setOrderId(orderFindMessage.getOrderId());
                 context.storage().set(ORDER, order);
-                System.out.println(order.toString());
+//                ////System.out.println(order.toString());
 
                 if (order.getItems().isEmpty()) {
                     EgressOrderFind egressMessage =
@@ -119,7 +119,7 @@ final class OrderFn implements StatefulFunction {
                     context.storage().set(STOCK_POLL_OUT, stock_poll_out);
                     context.storage().set(RESTOCK_SENT, false);
 
-                    System.out.println("Sending stock (find) requests to " + stock_poll_out + " items");
+//                    ////System.out.println("Sending stock (find) requests to " + stock_poll_out + " items");
 
                     for (Map.Entry<Integer, Integer> item : order.items.entrySet()) {
                         final InternalStockPollValue internalStockPollValueMessage =
@@ -131,33 +131,33 @@ final class OrderFn implements StatefulFunction {
                     }
                 }
             } else if (message.is(ORDER_ADD_ITEM_JSON_TYPE)) {
-                System.out.println("Add Order Item");
+                ////System.out.println("Add Order Item");
 
                 final OrderAddItem orderAddItemMessage = message.as(ORDER_ADD_ITEM_JSON_TYPE);
 
                 Order order = getOrderFromMessage(context);
 
-                System.out.println("Before: " + order.items.toString());
+                ////System.out.println("Before: " + order.items.toString());
                 order.add(orderAddItemMessage.getItemId());
-                System.out.println("After: " + order.items.toString());
+                ////System.out.println("After: " + order.items.toString());
 
                 context.storage().set(ORDER, order);
 
             } else if (message.is(ORDER_REMOVE_ITEM_JSON_TYPE)) {
-                System.out.println("Apply Order Remove Item");
+                ////System.out.println("Apply Order Remove Item");
 
                 final OrderRemoveItem orderRemoveItemMessage = message.as(ORDER_REMOVE_ITEM_JSON_TYPE);
 
                 Order order = getOrderFromMessage(context);
 
-                System.out.println("Before: " + order.items.toString());
+                ////System.out.println("Before: " + order.items.toString());
                 order.remove(orderRemoveItemMessage.getItemId());
-                System.out.println("After: " + order.items.toString());
+                ////System.out.println("After: " + order.items.toString());
 
                 context.storage().set(ORDER, order);
 
             } else if (message.is(ORDER_CHECKOUT_JSON_TYPE)) {
-                System.out.println("Apply Order Checkout");
+                ////System.out.println("Apply Order Checkout");
 
                 OrderCheckout orderCheckoutMessage = message.as(ORDER_CHECKOUT_JSON_TYPE);
 
@@ -174,7 +174,7 @@ final class OrderFn implements StatefulFunction {
                     context.storage().set(STOCK_POLL_OUT, stock_poll_out);
                     context.storage().set(RESTOCK_SENT, false);
 
-                    System.out.println("Sending stock requests to " + stock_poll_out + " items");
+                    ////System.out.println("Sending stock requests to " + stock_poll_out + " items");
 
                     for (Map.Entry<Integer, Integer> item : order.items.entrySet()) {
                         final InternalStockSubtract internalSubtractMessage =
@@ -186,9 +186,9 @@ final class OrderFn implements StatefulFunction {
                     }
                 }
             } else if (message.is(INTERNAL_ORDER_IS_PAID)) {
-                System.out.println("Apply Order Internal Is Paid");
+                ////System.out.println("Apply Order Internal Is Paid");
                 Order order = getOrderFromMessage(context);
-                System.out.println("ORDERFN: ORDER IS PAID: " + order.isPaid());
+                ////System.out.println("ORDERFN: ORDER IS PAID: " + order.isPaid());
 
                 // TODO Cannot change order if ispaid = true
 
@@ -196,13 +196,13 @@ final class OrderFn implements StatefulFunction {
             } else if (message.is(
                     INTERNAL_PAYMENT_CANCEL)) { // Can be used internally when checkout fails, not using this
                 // one
-                System.out.println("APPLY ORDER INTERNAL PAYMENT CANCEL --- DO NOT USE");
+                ////System.out.println("APPLY ORDER INTERNAL PAYMENT CANCEL --- DO NOT USE");
             } else if (message.is(ORDER_PAYMENT_STATUS_JSON_TYPE)) {
                 OrderPaymentStatus orderPaymentStatus = message.as(ORDER_PAYMENT_STATUS_JSON_TYPE);
-                System.out.println("ORDER PAYMENT STATUS");
-                System.out.println(orderPaymentStatus.getUId());
+                ////System.out.println("ORDER PAYMENT STATUS");
+                ////System.out.println(orderPaymentStatus.getUId());
                 Order order = getOrderFromMessage(context);
-                System.out.println(order.isPaid());
+                ////System.out.println(order.isPaid());
                 EgressPaymentStatus egressMessage =
                         new EgressPaymentStatus(order.isPaid());
 
@@ -213,14 +213,14 @@ final class OrderFn implements StatefulFunction {
                                 .withValue(EGRESS_PAYMENT_STATUS, egressMessage)
                                 .build());
             } else {
-                System.out.println(
-                        "Couldnt identify message in Order (non checkout mode): "
-                                + message.valueTypeName().asTypeNameString());
+//                ////System.out.println(
+//                        "Couldnt identify message in Order (non checkout mode): "
+//                                + message.valueTypeName().asTypeNameString());
             }
 
         } else { // IN CHECKOUT MODE
             if (message.is(INTERNAL_STOCK_CHECKOUT_CALLBACK)) {
-                System.out.println("Apply Order Internal Checkout Callback");
+                ////System.out.println("Apply Order Internal Checkout Callback");
 
                 final InternalStockCheckoutCallback internalMessage =
                         message.as(INTERNAL_STOCK_CHECKOUT_CALLBACK);
@@ -236,7 +236,7 @@ final class OrderFn implements StatefulFunction {
                 if (internalMessage.isOk()) {
                     if (stockPollOut == 0
                             && !isRestockSent(context)) { // Last message was received, we can stop now
-                        System.out.println("All stock has been approved");
+                        ////System.out.println("All stock has been approved");
 
                         Order order = getOrderFromMessage(context);
 
@@ -254,7 +254,7 @@ final class OrderFn implements StatefulFunction {
                     }
                 } else { // Error has occured, we need to fix the stock
                     if (!isRestockSent(context)) {
-                        System.out.println("At least one stock was low on supply");
+                        ////System.out.println("At least one stock was low on supply");
                         context.storage().set(RESTOCK_SENT, true);
 
                         Order order = getOrderFromMessage(context);
@@ -283,7 +283,7 @@ final class OrderFn implements StatefulFunction {
 
                 context.storage().set(IS_PAYING, false);
                 if (internalOrderPayMessage.isPaid()) {
-                    System.out.println("Payment successful");
+                    ////System.out.println("Payment successful");
                     Order order = getOrderFromMessage(context);
                     order.checkOut();
                     context.storage().set(ORDER, order);
@@ -298,13 +298,13 @@ final class OrderFn implements StatefulFunction {
                                     .build());
 
                 } else {
-                    System.out.println("Payment failed, restocking now");
+                    ////System.out.println("Payment failed, restocking now");
 
                     Order order = getOrderFromMessage(context);
 
                     EgressCheckoutStatus egressCheckoutStatus = new EgressCheckoutStatus(context.storage().get(UID).orElse(-1), false);
 
-                    System.out.println("UID = " + context.storage().get(UID).orElse(-1).toString());
+                    ////System.out.println("UID = " + context.storage().get(UID).orElse(-1).toString());
 
                     context.send(
                             KafkaEgressMessage.forEgress(KAFKA_EGRESS)
@@ -323,7 +323,7 @@ final class OrderFn implements StatefulFunction {
                 }
 
             } else if (message.is(INTERNAL_ORDER_FIND_CALLBACK)) {
-                System.out.println("Apply Order Internal Find Callback");
+                ////System.out.println("Apply Order Internal Find Callback");
 
                 final InternalOrderFindCallback internalMessage =
                         message.as(INTERNAL_ORDER_FIND_CALLBACK);
@@ -337,13 +337,13 @@ final class OrderFn implements StatefulFunction {
                                 context.storage().get(ORDER_COST).orElse(0) + internalMessage.getSummed_cost());
 
                 if (stockPollOut == 0) { // Last message was received, we can stop now
-                    System.out.println("All stock (find callback) has been approved");
+                    ////System.out.println("All stock (find callback) has been approved");
 
                     Order order = getOrderFromMessage(context);
 
                     int specialKey = context.storage().get(UID).orElse(-1);
                     if (specialKey == -1) {
-                        System.out.println("SPECIAL KEY SHOULD BE IN ORDER, BUT IS NOT");
+                        ////System.out.println("SPECIAL KEY SHOULD BE IN ORDER, BUT IS NOT");
                     }
 
                     // TODO: first parameter in egressorderfind should be orderID, but orderFn is unaware of this...
@@ -361,8 +361,8 @@ final class OrderFn implements StatefulFunction {
                 }
 
 
-            } else {
-                throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
+//            } else {
+//                throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
             }
         }
 

@@ -37,13 +37,13 @@ final class PaymentFn implements StatefulFunction {
     @Override
     public CompletableFuture<Void> apply(Context context, Message message) throws Exception {
         if (message.is(PAYMENT_ADD_FUNDS_JSON_TYPE)) {
-            System.out.println("APPLY PAYMENT ADD FUNDS");
+            ////System.out.println("APPLY PAYMENT ADD FUNDS");
             PaymentAddFunds addFundsMessage = message.as(PAYMENT_ADD_FUNDS_JSON_TYPE);
             User user = getUser(context);
-            System.out.println("Funds before: " + user.funds);
+            ////System.out.println("Funds before: " + user.funds);
             user.add(addFundsMessage.getAmount());
             context.storage().set(USER, user);
-            System.out.println("Funds after: " + user.funds);
+            ////System.out.println("Funds after: " + user.funds);
 
             EgressPaymentAddFunds egressMessage =
                     new EgressPaymentAddFunds(true);
@@ -56,7 +56,7 @@ final class PaymentFn implements StatefulFunction {
                             .build());
 
         } else if (message.is(ORDER_PAYMENT_STATUS_JSON_TYPE)) {
-            System.out.println("APPLY PAYMENT STATUS --- LOOP THROUGH ORDER, SHOULDNT SEE THIS MESSAGE");
+            ////System.out.println("APPLY PAYMENT STATUS --- LOOP THROUGH ORDER, SHOULDNT SEE THIS MESSAGE");
             //      PaymentStatus paymentStatusMessage = message.as(PAYMENT_STATUS_JSON_TYPE);
             //
             //      final InternalOrderIsPaid internalOrderIsPaidMessage =
@@ -68,27 +68,27 @@ final class PaymentFn implements StatefulFunction {
             //              .build());
 
         } else if (message.is(INTERNAL_PAYMENT_PAY_JSON_TYPE)) {
-            System.out.println("Apply Internal Payment Pay From Order");
+            ////System.out.println("Apply Internal Payment Pay From Order");
             // Pay order given by id (Internal to order => isPaid = true)
             InternalPaymentPay paymentPayMessage = message.as(INTERNAL_PAYMENT_PAY_JSON_TYPE);
             User user = getUser(context);
 
             final InternalOrderPay internalOrderPayMessage;
-            System.out.println(
-                    "Checking with user funds: "
-                            + user.funds
-                            + " on pay amount: "
-                            + paymentPayMessage.getPayAmount());
+//            ////System.out.println(
+//                    "Checking with user funds: "
+//                            + user.funds
+//                            + " on pay amount: "
+//                            + paymentPayMessage.getPayAmount());
             if (user.funds >= paymentPayMessage.getPayAmount()) {
-                System.out.println("User had funds: " + user.funds);
+                ////System.out.println("User had funds: " + user.funds);
                 user.remove(paymentPayMessage.getPayAmount());
                 context.storage().set(USER, user);
-                System.out.println("New user funds: " + user.funds);
+                ////System.out.println("New user funds: " + user.funds);
 
                 internalOrderPayMessage = new InternalOrderPay(true);
             } else {
                 internalOrderPayMessage = new InternalOrderPay(false);
-                System.out.println("Not enough funds to pay order");
+                ////System.out.println("Not enough funds to pay order");
             }
 
             Address caller;
@@ -110,7 +110,7 @@ final class PaymentFn implements StatefulFunction {
 
             PaymentFindUser paymentFindUserMessage = message.as(PAYMENT_FIND_USER_TYPE);
 
-            System.out.println("find user type");
+            ////System.out.println("find user type");
 
             EgressPaymentFindUser egressMessage =
                     new EgressPaymentFindUser(getUser(context).funds);
@@ -122,8 +122,8 @@ final class PaymentFn implements StatefulFunction {
                             .withValue(EGRESS_PAYMENT_FIND_USER, egressMessage)
                             .build());
 
-        } else {
-            throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
+//        } else {
+//            throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
         }
 
         return context.done();

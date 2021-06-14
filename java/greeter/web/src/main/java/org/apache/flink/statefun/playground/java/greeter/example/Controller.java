@@ -41,23 +41,23 @@ public class Controller {
         DeferredResult<ResponseEntity<?>> output = new DeferredResult<>();
         ForkJoinPool.commonPool().submit(() -> {
             defferedReturn(output, key);
-            System.out.println("RETURN DEFERRED FOR KEY " + key);
+            ////System.out.println("RETURN DEFERRED FOR KEY " + key);
         });
         return output;
     }
 
     public void defferedReturn(DeferredResult<ResponseEntity<?>> output, Integer key) {
         while (!dict.containsKey(key)) {
-            System.out.println("WAITING for key: " + key + " in dict " + dict);
+            ////System.out.println("WAITING for key: " + key + " in dict " + dict);
             try {
-                TimeUnit.MILLISECONDS.sleep(250);
+                TimeUnit.MILLISECONDS.sleep(50);
             } catch (Exception e) {
-                System.out.println("Deffered return exception");
+                ////System.out.println("Deffered return exception");
             }
         }
 
         Object outputObject = dict.get(key);
-        System.out.println("output obj = " + outputObject.getClass());
+        ////System.out.println("output obj = " + outputObject.getClass());
         if (outputObject instanceof EgressCheckoutStatus) {
             EgressCheckoutStatus outputEgressCheckoutStatus = (EgressCheckoutStatus) outputObject;
             if (outputEgressCheckoutStatus.getCheckout_status()) {
@@ -67,7 +67,7 @@ public class Controller {
                 output.setResult(retEntity);
             }
         } else {
-            System.out.println("Didnt identify return obj 2");
+            ////System.out.println("Didnt identify return obj 2");
 
             output.setResult(ResponseEntity.ok(outputObject));
         }
@@ -93,7 +93,7 @@ public class Controller {
 
     @KafkaListener(id = "egress-payment-find_user", topics = "egress-payment-find_user")
     public void listenUserFind(ConsumerRecord<Object, Object> data) throws JsonProcessingException {
-        System.out.println("find user type 2");
+        ////System.out.println("find user type 2");
         dict.put(Integer.parseInt(data.key().toString()),
                 new ObjectMapper().readValue(data.value().toString(), PaymentFindUserResponse.class));
     }
@@ -106,8 +106,8 @@ public class Controller {
 
     @KafkaListener(id = "egress-order-checkout", topics = "egress-order-checkout")
     public void listenOrderCheckout(ConsumerRecord<Object, Object> data) throws JsonProcessingException {
-        System.out.println("RECEIVED MESSAGE");
-        System.out.println(data);
+//        ////System.out.println("RECEIVED MESSAGE");
+//        ////System.out.println(data);
         dict.put(Integer.parseInt(data.key().toString()), new ObjectMapper().readValue(data.value().toString(), EgressCheckoutStatus.class));
     }
 

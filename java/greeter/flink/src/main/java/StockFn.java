@@ -53,7 +53,7 @@ final class StockFn implements StatefulFunction {
   @Override
   public CompletableFuture<Void> apply(Context context, Message message) {
     if (message.is(STOCK_FIND_JSON_TYPE)) {
-      System.out.println("Apply Stock Find");
+      //System.out.println("Apply Stock Find");
 
       final StockFind stockFindMessage = message.as(STOCK_FIND_JSON_TYPE);
 
@@ -69,67 +69,67 @@ final class StockFn implements StatefulFunction {
               .withValue(EGRESS_STOCK_FIND, egressMessage)
               .build());
 
-      System.out.println("Price: " + product.getPrice() + ", Quantity: " + product.getQuantity());
+      //System.out.println("Price: " + product.getPrice() + ", Quantity: " + product.getQuantity());
 
     } else if (message.is(STOCK_SUBTRACT_JSON_TYPE)) { // Can go under 0
-      System.out.println("Apply Stock Subtract TYPE");
+      //System.out.println("Apply Stock Subtract TYPE");
 
       final StockSubtract stockSubtractMessage = message.as(STOCK_SUBTRACT_JSON_TYPE);
       Product product = getProductFromMessage(context);
-      System.out.println("Quantity before: " + product.getQuantity());
+      //System.out.println("Quantity before: " + product.getQuantity());
 
       product.subtract(stockSubtractMessage.getNumberSubtract());
       context.storage().set(PRODUCT, product);
-      System.out.println("Quantity after: " + product.getQuantity());
+      //System.out.println("Quantity after: " + product.getQuantity());
 
     } else if (message.is(STOCK_ADD_JSON_TYPE)) {
-      System.out.println("Apply Stock Add");
+      //System.out.println("Apply Stock Add");
 
       final StockAdd stockAddMessage = message.as(STOCK_ADD_JSON_TYPE);
 
       Product product = getProductFromMessage(context);
 
-      System.out.println("Quantity before: " + product.getQuantity());
+      //System.out.println("Quantity before: " + product.getQuantity());
       product.add(stockAddMessage.getNumberAdd());
 
-      System.out.println("Quantity after: " + product.getQuantity());
+      //System.out.println("Quantity after: " + product.getQuantity());
       context.storage().set(PRODUCT, product);
 
     } else if (message.is(STOCK_ITEM_CREATE_JSON_TYPE)) {
-      System.out.println("Apply Stock Item Create");
+      //System.out.println("Apply Stock Item Create");
 
       final StockItemCreate stockItemCreateMessage = message.as(STOCK_ITEM_CREATE_JSON_TYPE);
       if (!context.storage().get(PRODUCT).isPresent()) {
-        System.out.println("Added new product ID to stock");
-        System.out.println("PRICE: " + stockItemCreateMessage.getPrice());
+        //System.out.println("Added new product ID to stock");
+        //System.out.println("PRICE: " + stockItemCreateMessage.getPrice());
         context.storage().set(PRODUCT, new Product(stockItemCreateMessage.getPrice(), 0));
       } else {
-        System.out.println("Trying to add product at already existing ID");
+        //System.out.println("Trying to add product at already existing ID");
       }
 
     } else if (message.is(INTERNAL_STOCK_SUBTRACT)) { // Internal message from ORDER_CHECKOUT
-      System.out.println("INTERNAL STOCK SUBTRACT");
+      //System.out.println("INTERNAL STOCK SUBTRACT");
       Product product = getProductFromMessage(context);
       final InternalStockSubtract internalStockSubtractMessage =
           message.as(INTERNAL_STOCK_SUBTRACT);
 
       InternalStockCheckoutCallback internalCallbackMessage;
 
-      System.out.println("Old quantity: " + product.quantity);
+      //System.out.println("Old quantity: " + product.quantity);
       product.subtract(internalStockSubtractMessage.getValue());
-      System.out.println("New quantity: " + product.quantity);
+      //System.out.println("New quantity: " + product.quantity);
       context.storage().set(PRODUCT, product);
 
       if (product.getQuantity() >= 0) {
         int summed_cost = internalStockSubtractMessage.getValue() * product.getPrice();
-        System.out.println("Price: " + summed_cost);
+        //System.out.println("Price: " + summed_cost);
         internalCallbackMessage = new InternalStockCheckoutCallback(true, summed_cost);
-        System.out.println("Had enough items");
+        //System.out.println("Had enough items");
 
         // kinda dirty hack but okay for now
       } else {
         internalCallbackMessage = new InternalStockCheckoutCallback(false, 0);
-        System.out.println("Did not have enough items in stock for request");
+        //System.out.println("Did not have enough items in stock for request");
       }
 
       Address caller;
@@ -139,18 +139,18 @@ final class StockFn implements StatefulFunction {
         throw new RuntimeException("CALLER NOT PRESENT");
       }
 
-      System.out.println(
-          "RETURNING Internal stock checkout callback message: "
-              + "Cost: "
-              + internalCallbackMessage.getSummedCost()
-              + " and isOk: "
-              + internalCallbackMessage.isOk());
+//      //System.out.println(
+//          "RETURNING Internal stock checkout callback message: "
+//              + "Cost: "
+//              + internalCallbackMessage.getSummedCost()
+//              + " and isOk: "
+//              + internalCallbackMessage.isOk());
       context.send(
           MessageBuilder.forAddress(caller)
               .withCustomType(INTERNAL_STOCK_CHECKOUT_CALLBACK, internalCallbackMessage)
               .build());
     } else if (message.is(INTERNAL_STOCK_POLL_VALUE)) {
-      System.out.println("Apply stock internal poll value");
+      //System.out.println("Apply stock internal poll value");
 
       Product product = getProductFromMessage(context);
       final InternalStockPollValue internalStockPollValueMessage =
@@ -171,8 +171,8 @@ final class StockFn implements StatefulFunction {
               .withCustomType(INTERNAL_ORDER_FIND_CALLBACK, internalOrderFindCallbackMessage)
               .build());
 
-    } else {
-      throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
+//    } else {
+//      throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
     }
 
     return context.done();
