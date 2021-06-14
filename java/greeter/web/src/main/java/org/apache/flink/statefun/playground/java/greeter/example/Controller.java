@@ -91,6 +91,13 @@ public class Controller {
                 new ObjectMapper().readValue(data.value().toString(), StockFindResponse.class));
     }
 
+    @KafkaListener(id = "egress-payment-find_user", topics = "egress-payment-find_user")
+    public void listenUserFind(ConsumerRecord<Object, Object> data) throws JsonProcessingException {
+        System.out.println("find user type 2");
+        dict.put(Integer.parseInt(data.key().toString()),
+                new ObjectMapper().readValue(data.value().toString(), PaymentFindUserResponse.class));
+    }
+
     @KafkaListener(id = "egress-order-find", topics = "egress-order-find")
     public void listenOrderFind(ConsumerRecord<Object, Object> data) throws JsonProcessingException {
         dict.put(Integer.parseInt(data.key().toString()),
@@ -195,5 +202,13 @@ public class Controller {
     public ResponseEntity<?> createUser() {
         this.template.send("payment-create_user", String.valueOf(++user_id), new PaymentCreateUser(user_id));
         return ResponseEntity.ok(new PaymentCreateUserResponse(user_id));
+    }
+
+    //GET - get credit from user.
+    @GetMapping(path = "/payment/find_user/{user_id}")
+    public DeferredResult<ResponseEntity<?>> findUser(@PathVariable Integer user_id) {
+        Integer uId = rand.nextInt();
+        this.template.send("payment-find_user", String.valueOf(user_id), new PaymentFindUser(uId, user_id));
+        return deffer(uId);
     }
 }

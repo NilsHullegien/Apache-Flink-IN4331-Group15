@@ -114,6 +114,10 @@ module:
                 valueType: types/types.Payment.PaymentAddFunds
                 targets:
                   - greeter.fns/payment
+              - topic: payment-find_user
+                valueType: types/types.Payment.PaymentFindUser
+                targets:
+                  - greeter.fns/payment
     egresses:
       - egress:
           meta:

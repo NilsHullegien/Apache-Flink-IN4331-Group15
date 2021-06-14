@@ -12,10 +12,12 @@ import org.apache.flink.statefun.sdk.java.types.SimpleType;
 import org.apache.flink.statefun.sdk.java.types.Type;
 import types.Egress.EgressOrderFind;
 import types.Egress.EgressPaymentAddFunds;
+import types.Egress.EgressPaymentFindUser;
 import types.Internal.InternalOrderPay;
 import types.Internal.InternalPaymentPay;
 import types.Order.OrderFind;
 import types.Payment.PaymentAddFunds;
+import types.Payment.PaymentFindUser;
 
 import static types.Types.*;
 
@@ -103,6 +105,23 @@ final class PaymentFn implements StatefulFunction {
 
         } else if (message.is(PAYMENT_CREATE_USER_TYPE)) {
             context.storage().set(USER, context.storage().get(USER).orElse(new User()));
+
+        } else if (message.is(PAYMENT_FIND_USER_TYPE)) {
+
+            PaymentFindUser paymentFindUserMessage = message.as(PAYMENT_FIND_USER_TYPE);
+
+            System.out.println("find user type");
+
+            EgressPaymentFindUser egressMessage =
+                    new EgressPaymentFindUser(getUser(context).funds);
+
+            context.send(
+                    KafkaEgressMessage.forEgress(KAFKA_EGRESS)
+                            .withTopic("egress-payment-find_user")
+                            .withUtf8Key(String.valueOf(paymentFindUserMessage.getUId()))
+                            .withValue(EGRESS_PAYMENT_FIND_USER, egressMessage)
+                            .build());
+
         } else {
             throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
         }
