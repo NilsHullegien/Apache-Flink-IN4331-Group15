@@ -71,11 +71,6 @@ public class Controller {
         dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
     }
 
-    @KafkaListener(id = "egress-stock-item-create", topics = "egress-stock-item-create")
-    public void listenItemCreate (ConsumerRecord<Object, Object> data) {
-        dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
-    }
-
     @KafkaListener(id = "egress-order-create", topics = "egress-order-create")
     public void listenOrderCreate (ConsumerRecord<Object, Object> data) {
         dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
