@@ -33,10 +33,7 @@ import org.apache.flink.statefun.sdk.java.types.Type;
 import types.Egress.EgressOrderFind;
 import types.Egress.EgressPaymentStatus;
 import types.Egress.EgressStockFind;
-import types.Internal.InternalOrderPay;
-import types.Internal.InternalPaymentPay;
-import types.Internal.InternalStockCheckoutCallback;
-import types.Internal.InternalStockSubtract;
+import types.Internal.*;
 import types.Order.*;
 import types.Stock.StockAdd;
 import types.Stock.StockFind;
@@ -91,25 +88,31 @@ final class OrderFn implements StatefulFunction {
       } else if (message.is(ORDER_FIND_JSON_TYPE)) {
         System.out.println("Find Order");
 
+        context.storage().set(ORDER_COST, 0);
+
         Order order = getOrderFromMessage(context);
         System.out.println(order.toString());
 
-        // Total cost to Stock
-        // TODO SPAM TO STOCK, REQUEST PRICE
+        int stock_poll_out = context.storage().get(STOCK_POLL_OUT).orElse(0);
 
-        final OrderFind orderFindMessage = message.as(ORDER_FIND_JSON_TYPE);
+        if (stock_poll_out == 0) {
+          stock_poll_out = order.items.size();
 
-        EgressOrderFind egressMessage =
-                new EgressOrderFind(orderFindMessage.getOrderId(), order.isPaid(), order.items, order.userId, 69);
+          context.storage().set(STOCK_POLL_OUT, stock_poll_out);
+          context.storage().set(RESTOCK_SENT, false);
 
-        System.out.println("very special key: " + orderFindMessage.getOrderId().toString());
+          System.out.println("Sending stock (find) requests to " + stock_poll_out + " items");
 
-        context.send(
-                KafkaEgressMessage.forEgress(KAFKA_EGRESS)
-                        .withTopic("egress-order-find")
-                        .withUtf8Key(orderFindMessage.getOrderId().toString())
-                        .withValue(EGRESS_ORDER_FIND, egressMessage)
-                        .build());
+          for (Map.Entry<Integer, Integer> item : order.items.entrySet()) {
+            final InternalStockPollValue internalStockPollValueMessage =
+                new InternalStockPollValue(item.getValue());
+            context.send(
+                MessageBuilder.forAddress(StockFn.TYPENAME, item.getKey().toString())
+                    .withCustomType(INTERNAL_STOCK_POLL_VALUE, internalStockPollValueMessage)
+                    .build());
+          }
+
+        }
 
       } else if (message.is(ORDER_ADD_ITEM_JSON_TYPE)) {
         System.out.println("Add Order Item");
@@ -175,18 +178,6 @@ final class OrderFn implements StatefulFunction {
           INTERNAL_PAYMENT_CANCEL)) { // Can be used internally when checkout fails, not using this
         // one
         System.out.println("APPLY ORDER INTERNAL PAYMENT CANCEL --- DO NOT USE");
-        //				Order order = getOrderFromMessage(context);
-        //				order.setPaid(false);
-        //				context.storage().set(ORDER, order);
-        //
-        //				Address caller;
-        //				if (context.caller().isPresent()) {
-        //					caller = context.caller().get();
-        //				} else {
-        //					throw new RuntimeException("CALLER NOT PRESENT");
-        //				}
-        //				//GET TOTAL COST OF ORDER
-
       } else if (message.is(ORDER_PAYMENT_STATUS_JSON_TYPE)) {
         OrderPaymentStatus orderPaymentStatus = message.as(ORDER_PAYMENT_STATUS_JSON_TYPE);
 
@@ -278,6 +269,41 @@ final class OrderFn implements StatefulFunction {
                     .build());
           }
         }
+
+      } else if (message.is(INTERNAL_ORDER_FIND_CALLBACK)) {
+        System.out.println("Apply Order Internal Find Callback");
+
+        final InternalOrderFindCallback internalMessage =
+            message.as(INTERNAL_ORDER_FIND_CALLBACK);
+        int stockPollOut = getStockPollOut(context) - 1;
+        context.storage().set(STOCK_POLL_OUT, stockPollOut);
+
+        context
+            .storage()
+            .set(
+                ORDER_COST,
+                context.storage().get(ORDER_COST).orElse(0) + internalMessage.getSummed_cost());
+
+        if (stockPollOut == 0) { // Last message was received, we can stop now
+          System.out.println("All stock (find callback) has been approved");
+
+          Order order = getOrderFromMessage(context);
+
+          final OrderFind orderFindMessage = message.as(ORDER_FIND_JSON_TYPE);
+
+          EgressOrderFind egressMessage =
+              new EgressOrderFind(orderFindMessage.getOrderId(), order.isPaid(), order.items, order.userId, 69);
+
+          System.out.println("very special key: " + orderFindMessage.getOrderId().toString());
+
+          context.send(
+              KafkaEgressMessage.forEgress(KAFKA_EGRESS)
+                  .withTopic("egress-order-find")
+                  .withUtf8Key(orderFindMessage.getOrderId().toString())
+                  .withValue(EGRESS_ORDER_FIND, egressMessage)
+                  .build());
+        }
+
 
       } else {
         throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());

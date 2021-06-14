@@ -7,6 +7,7 @@ source $(dirname "$0")/utils.sh
 #  2) Stock Add 2 of item id 0
 #  3) Create order, user id 0?
 #  4) Order add item id 0
+#4.5) Find Order 0
 #  5) Add funds 10
 #  6) Order checkout -- should work
 #  7) Order add item id 0 -- 2 in total now
@@ -48,6 +49,14 @@ json=$(cat <<JSON
 JSON
 )
 ingress_topic="order-add-item"
+send_to_kafka $key $json $ingress_topic
+
+
+json=$(cat <<JSON
+ {"order_find_identifier": 0}
+JSON
+)
+ingress_topic="order-find"
 send_to_kafka $key $json $ingress_topic
 
 # 5)

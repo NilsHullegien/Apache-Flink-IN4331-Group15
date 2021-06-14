@@ -28,7 +28,9 @@ import org.apache.flink.statefun.sdk.java.message.MessageBuilder;
 import org.apache.flink.statefun.sdk.java.types.SimpleType;
 import org.apache.flink.statefun.sdk.java.types.Type;
 import types.Egress.EgressStockFind;
+import types.Internal.InternalOrderFindCallback;
 import types.Internal.InternalStockCheckoutCallback;
+import types.Internal.InternalStockPollValue;
 import types.Internal.InternalStockSubtract;
 import types.Stock.*;
 
@@ -147,6 +149,28 @@ final class StockFn implements StatefulFunction {
           MessageBuilder.forAddress(caller)
               .withCustomType(INTERNAL_STOCK_CHECKOUT_CALLBACK, internalCallbackMessage)
               .build());
+    } else if (message.is(INTERNAL_STOCK_POLL_VALUE)) {
+      System.out.println("Apply stock internal poll value");
+
+      Product product = getProductFromMessage(context);
+      final InternalStockPollValue internalStockPollValueMessage =
+          message.as(INTERNAL_STOCK_POLL_VALUE);
+
+      InternalOrderFindCallback internalOrderFindCallbackMessage = new InternalOrderFindCallback(
+          product.getPrice() * internalStockPollValueMessage.getCount());
+
+      Address caller;
+      if (context.caller().isPresent()) {
+        caller = context.caller().get();
+      } else {
+        throw new RuntimeException("CALLER NOT PRESENT");
+      }
+
+      context.send(
+          MessageBuilder.forAddress(caller)
+              .withCustomType(INTERNAL_ORDER_FIND_CALLBACK, internalOrderFindCallbackMessage)
+              .build());
+
     } else {
       throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
     }

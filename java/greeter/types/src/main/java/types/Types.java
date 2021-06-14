@@ -142,6 +142,18 @@ public final class Types {
 			JSON_OBJ_MAPPER::writeValueAsBytes,
 			bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalOrderPay.class));
 
+	public static final Type<InternalStockPollValue> INTERNAL_STOCK_POLL_VALUE =
+		SimpleType.simpleImmutableTypeFrom(
+			TypeName.typeNameOf(TYPES_NAMESPACE, InternalStockPollValue.class.getName()),
+			JSON_OBJ_MAPPER::writeValueAsBytes,
+			bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalStockPollValue.class));
+
+	public static final Type<InternalOrderFindCallback> INTERNAL_ORDER_FIND_CALLBACK =
+		SimpleType.simpleImmutableTypeFrom(
+			TypeName.typeNameOf(TYPES_NAMESPACE, InternalOrderFindCallback.class.getName()),
+			JSON_OBJ_MAPPER::writeValueAsBytes,
+			bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalOrderFindCallback.class));
+
 	public static final Type<EgressStockFind> EGRESS_STOCK_FIND =
 		SimpleType.simpleImmutableTypeFrom(
 			TypeName.typeNameOf(TYPES_NAMESPACE, EgressStockFind.class.getName()),
