@@ -25,18 +25,23 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.flink.statefun.sdk.java.*;
+import org.apache.flink.statefun.sdk.java.io.KafkaEgressMessage;
 import org.apache.flink.statefun.sdk.java.message.Message;
 import org.apache.flink.statefun.sdk.java.message.MessageBuilder;
 import org.apache.flink.statefun.sdk.java.types.SimpleType;
 import org.apache.flink.statefun.sdk.java.types.Type;
+import types.Egress.EgressOrderFind;
+import types.Egress.EgressStockFind;
 import types.Internal.InternalOrderPay;
 import types.Internal.InternalPaymentPay;
 import types.Internal.InternalStockCheckoutCallback;
 import types.Internal.InternalStockSubtract;
 import types.Order.OrderAddItem;
 import types.Order.OrderCreate;
+import types.Order.OrderFind;
 import types.Order.OrderRemoveItem;
 import types.Stock.StockAdd;
+import types.Stock.StockFind;
 
 import static types.Types.*;
 
@@ -90,8 +95,23 @@ final class OrderFn implements StatefulFunction {
 
         Order order = getOrderFromMessage(context);
         System.out.println(order.toString());
+
         // Total cost to Stock
         // TODO SPAM TO STOCK, REQUEST PRICE
+
+        final OrderFind orderFindMessage = message.as(ORDER_FIND_JSON_TYPE);
+
+        EgressOrderFind egressMessage =
+                new EgressOrderFind(orderFindMessage.getOrderId(), order.isPaid(), order.items, order.userId, 69);
+
+        System.out.println("very special key: " + orderFindMessage.getOrderId().toString());
+
+        context.send(
+                KafkaEgressMessage.forEgress(KAFKA_EGRESS)
+                        .withTopic("egress-order-find")
+                        .withUtf8Key(orderFindMessage.getOrderId().toString())
+                        .withValue(EGRESS_ORDER_FIND, egressMessage)
+                        .build());
 
       } else if (message.is(ORDER_ADD_ITEM_JSON_TYPE)) {
         System.out.println("Add Order Item");

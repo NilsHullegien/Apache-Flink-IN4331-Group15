@@ -147,4 +147,10 @@ public final class Types {
 			TypeName.typeNameOf(TYPES_NAMESPACE, EgressStockFind.class.getName()),
 			JSON_OBJ_MAPPER::writeValueAsBytes,
 			bytes -> JSON_OBJ_MAPPER.readValue(bytes, EgressStockFind.class));
+
+	public static final Type<EgressOrderFind> EGRESS_ORDER_FIND =
+			SimpleType.simpleImmutableTypeFrom(
+					TypeName.typeNameOf(TYPES_NAMESPACE, EgressOrderFind.class.getName()),
+					JSON_OBJ_MAPPER::writeValueAsBytes,
+					bytes -> JSON_OBJ_MAPPER.readValue(bytes, EgressOrderFind.class));
 }

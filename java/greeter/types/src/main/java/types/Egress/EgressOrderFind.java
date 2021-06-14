@@ -2,6 +2,8 @@ package types.Egress;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.HashMap;
+
 public class EgressOrderFind {
 
   @JsonProperty("order_id")
@@ -11,7 +13,7 @@ public class EgressOrderFind {
   private Boolean paid;
 
   @JsonProperty("items")
-  private Integer[] items;
+  private HashMap<Integer, Integer> items;
 
   @JsonProperty("user_id")
   private Integer user_id;
@@ -21,7 +23,7 @@ public class EgressOrderFind {
 
   public EgressOrderFind() {}
 
-  public EgressOrderFind(Integer order_id, Boolean paid, Integer[] items, Integer user_id, Integer total_cost) {
+  public EgressOrderFind(Integer order_id, Boolean paid, HashMap<Integer, Integer> items, Integer user_id, Integer total_cost) {
     this.order_id = order_id;
     this.paid = paid;
     this.items = items;
@@ -37,7 +39,7 @@ public class EgressOrderFind {
     return paid;
   }
 
-  public Integer[] getItems() {
+  public HashMap<Integer, Integer> getItems() {
     return items;
   }
 

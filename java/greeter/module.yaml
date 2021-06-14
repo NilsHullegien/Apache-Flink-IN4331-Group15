@@ -126,3 +126,12 @@ module:
               transactionTimeoutMillis: 10000
               # producer:
               #      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      - egress:
+          meta:
+            type: io.statefun.kafka/egress
+            id: order-namespace/order
+          spec:
+            address: kafka:9092
+            deliverySemantic:
+              type: exactly-once
+              transactionTimeoutMillis: 10000
