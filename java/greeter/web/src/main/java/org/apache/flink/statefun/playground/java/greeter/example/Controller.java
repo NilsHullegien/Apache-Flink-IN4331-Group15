@@ -121,6 +121,7 @@ public class Controller {
     @PostMapping(path = "/orders/checkout/{order_id}")
     public void checkoutOrder(@PathVariable Integer order_id) {
         this.template.send("order-checkout", String.valueOf(order_id), new OrderCheckout(order_id));
+
     }
 
     //GET - retrieves the information of an item in stock

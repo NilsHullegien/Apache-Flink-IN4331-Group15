@@ -270,6 +270,9 @@ final class OrderFn implements StatefulFunction {
         context.storage().set(IS_PAYING, false);
         if (internalOrderPayMessage.isPaid()) {
           System.out.println("Payment successful");
+          Order order = getOrderFromMessage(context);
+          order.checkOut();
+          context.storage().set(ORDER, order);
           // TODO EGRESS SUCCESS
         } else {
           System.out.println("Payment failed, restocking now");
