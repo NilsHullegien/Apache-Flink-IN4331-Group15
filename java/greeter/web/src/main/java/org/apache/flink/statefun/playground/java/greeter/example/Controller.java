@@ -149,7 +149,7 @@ public class Controller {
     @GetMapping(path = "/payment/status/{order_id}")
     public DeferredResult<ResponseEntity<?>> statusPayment(@PathVariable Integer order_id) {
         Integer uId = rand.nextInt();
-        this.template.send("payment-status", String.valueOf(order_id), new PaymentStatus(uId, order_id));
+        this.template.send("payment-status", String.valueOf(order_id), new PaymentStatus(uId));
         return deffer(String.valueOf(uId));
     }
 
