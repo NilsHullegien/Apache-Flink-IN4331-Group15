@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -91,7 +90,7 @@ final class OrderFn implements StatefulFunction {
         OrderFind orderFindMessage = message.as(ORDER_FIND_JSON_TYPE);
 
         context.storage().set(ORDER_COST, 0);
-        context.storage().set(UID, orderFindMessage.getUid());
+        context.storage().set(UID, orderFindMessage.getUId());
 
         Order order = getOrderFromMessage(context);
         System.out.println(order.toString());
@@ -192,7 +191,7 @@ final class OrderFn implements StatefulFunction {
         context.send(
             KafkaEgressMessage.forEgress(KAFKA_EGRESS)
                 .withTopic("egress-payment-status")
-                .withUtf8Key(orderPaymentStatus.getOrderId().toString())
+                .withUtf8Key(orderPaymentStatus.getUId().toString())
                 .withValue(EGRESS_PAYMENT_STATUS, egressMessage)
                 .build());
       } else {

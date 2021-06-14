@@ -3,7 +3,7 @@ package types.Order;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class OrderPaymentStatus {
-    @JsonProperty("uId")
+    @JsonProperty("uid")
     private Integer uId;
 
     public OrderPaymentStatus() {

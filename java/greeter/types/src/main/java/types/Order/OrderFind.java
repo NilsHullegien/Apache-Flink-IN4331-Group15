@@ -3,7 +3,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class OrderFind {
 
-  @JsonProperty("uId")
+  @JsonProperty("uid")
   private Integer uId;
 
   public OrderFind() {}
