@@ -29,6 +29,7 @@ import org.apache.flink.statefun.sdk.java.message.Message;
 import org.apache.flink.statefun.sdk.java.message.MessageBuilder;
 import org.apache.flink.statefun.sdk.java.types.SimpleType;
 import org.apache.flink.statefun.sdk.java.types.Type;
+import types.Egress.EgressCheckoutStatus;
 import types.Egress.EgressOrderFind;
 import types.Egress.EgressPaymentStatus;
 import types.Internal.*;

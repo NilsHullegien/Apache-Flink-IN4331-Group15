@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
+import types.Egress.EgressCheckoutStatus;
 import types.Order.*;
 import types.Payment.*;
 import types.Response.*;
@@ -55,7 +56,19 @@ public class Controller {
         }
 
         Object outputObject = dict.get(key);
-        output.setResult(ResponseEntity.ok(outputObject));
+        System.out.println("output obj = " + outputObject.getClass());
+        if (outputObject instanceof EgressCheckoutStatus) {
+            EgressCheckoutStatus outputEgressCheckoutStatus = (EgressCheckoutStatus) outputObject;
+            if (outputEgressCheckoutStatus.getCheckout_status()) {
+                output.setResult(ResponseEntity.ok("success"));
+            } else {
+                output.setResult(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failure"));
+            }
+        } else { 
+            System.out.println("Didnt identify return obj");
+
+            output.setResult(ResponseEntity.ok(outputObject));
+        }
     }
 
     @KafkaListener(id = "egress-payment-add-funds", topics = "egress-payment-add-funds")
