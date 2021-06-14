@@ -42,7 +42,6 @@ public class Controller {
             defferedReturn(output, Integer.parseInt(key));
             System.out.println("RETURN DEFERRED FOR KEY " + key);
         });
-        System.out.println("RETURNING OUTPUT");
         return output;
     }
 
@@ -142,9 +141,9 @@ public class Controller {
 
     //GET - creates a item in the stock
     @GetMapping(path = "/stock/item/create/{price}")
-    public DeferredResult<ResponseEntity<?>> createStock(@PathVariable Integer price) {
+    public String createStock(@PathVariable Integer price) {
         this.template.send("stock-item-create", String.valueOf(++item_id), new StockItemCreate(price));
-        return deffer(String.valueOf(item_id));
+        return "{\"item_id\":" + item_id + "}";
     }
 
     //Post - add an item form the stock by the given amount
