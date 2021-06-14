@@ -182,8 +182,8 @@ public class Controller {
         return deffer(uId);
     }
 
-    //Get - add funds to user his account
-    @GetMapping(path = "/payment/add_funds/{user_id}/{amount}")
+    //Post - add funds to user his account
+    @PostMapping(path = "/payment/add_funds/{user_id}/{amount}")
     public DeferredResult<ResponseEntity<?>> addPayment(@PathVariable Integer user_id, @PathVariable Integer amount) {
         Integer uId = rand.nextInt();
         this.template.send("payment-add-funds", String.valueOf(user_id), new PaymentAddFunds(uId, amount));
