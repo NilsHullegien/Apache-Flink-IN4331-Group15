@@ -150,7 +150,7 @@ public class Controller {
     //Get - get payed status of an order
     @GetMapping(path = "/payment/status/{order_id}")
     public DeferredResult<ResponseEntity<?>> statusPayment(@PathVariable Integer order_id) {
-        this.template.send("payment-status", String.valueOf(order_id));
+        this.template.send("payment-status", String.valueOf(order_id), new OrderPaymentStatus(order_id));
         return deffer(String.valueOf(order_id));
     }
 

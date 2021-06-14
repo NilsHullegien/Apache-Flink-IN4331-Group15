@@ -1,14 +1,14 @@
-package types.Order;
+package types.Payment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class OrderPaymentStatus {
-  @JsonProperty("payment_order_status")
+public class PaymentStatus {
+  @JsonProperty("payment_order_id")
   private Integer orderId;
 
-  public OrderPaymentStatus() {}
+  public PaymentStatus() {}
 
-  public OrderPaymentStatus(Integer orderId) {
+  public PaymentStatus(Integer orderId) {
     this.orderId = orderId;
   }
 
