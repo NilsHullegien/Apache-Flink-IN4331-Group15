@@ -3,12 +3,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.concurrent.CompletableFuture;
 import org.apache.flink.statefun.sdk.java.*;
+import org.apache.flink.statefun.sdk.java.io.KafkaEgressMessage;
 import org.apache.flink.statefun.sdk.java.message.Message;
 import org.apache.flink.statefun.sdk.java.message.MessageBuilder;
 import org.apache.flink.statefun.sdk.java.types.SimpleType;
 import org.apache.flink.statefun.sdk.java.types.Type;
+import types.Egress.EgressOrderFind;
+import types.Egress.EgressPaymentAddFunds;
 import types.Internal.InternalOrderPay;
 import types.Internal.InternalPaymentPay;
+import types.Order.OrderFind;
 import types.Payment.PaymentAddFunds;
 
 import static types.Types.*;
@@ -24,7 +28,7 @@ final class PaymentFn implements StatefulFunction {
           .withSupplier(PaymentFn::new)
           .build();
 
-  private static final TypeName KAFKA_EGRESS = TypeName.typeNameOf("order-namespace", "payment");
+  private static final TypeName KAFKA_EGRESS = TypeName.typeNameOf("payment-namespace", "payment");
 
   @Override
   public CompletableFuture<Void> apply(Context context, Message message) throws Exception {
@@ -36,6 +40,16 @@ final class PaymentFn implements StatefulFunction {
       user.add(addFundsMessage.getAmount());
       context.storage().set(USER, user);
       System.out.println("Funds after: " + user.funds);
+
+      EgressPaymentAddFunds egressMessage =
+              new EgressPaymentAddFunds(true);
+
+      context.send(
+              KafkaEgressMessage.forEgress(KAFKA_EGRESS)
+                      .withTopic("egress-payment-add-funds")
+                      .withUtf8Key("1")
+                      .withValue(EGRESS_PAYMENT_ADD_FUNDS, egressMessage)
+                      .build());
 
     } else if (message.is(PAYMENT_STATUS_JSON_TYPE)) {
       System.out.println("APPLY PAYMENT STATUS --- LOOP THROUGH ORDER, SHOULDNT SEE THIS MESSAGE");
