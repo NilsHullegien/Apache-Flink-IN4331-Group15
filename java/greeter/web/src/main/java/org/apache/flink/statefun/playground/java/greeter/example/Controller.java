@@ -196,5 +196,4 @@ public class Controller {
         this.template.send("payment-create_user", String.valueOf(++user_id), new PaymentCreateUser(user_id));
         return ResponseEntity.ok(new PaymentCreateUserResponse(user_id));
     }
-
 }
