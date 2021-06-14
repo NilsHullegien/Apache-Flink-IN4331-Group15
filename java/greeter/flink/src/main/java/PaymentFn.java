@@ -69,17 +69,17 @@ final class PaymentFn implements StatefulFunction {
       InternalPaymentPay paymentPayMessage = message.as(INTERNAL_PAYMENT_PAY_JSON_TYPE);
       User user = getUser(context);
 
-      final InternalOrderPay internalOrderPayMessage;
-      System.out.println(
-          "Checking with user funds: "
-              + user.funds
-              + " on pay amount: "
-              + paymentPayMessage.getPayAmount());
-      if (user.funds >= paymentPayMessage.getPayAmount()) {
-        System.out.println("User had funds: " + user.funds);
-        user.remove(paymentPayMessage.getPayAmount());
-        context.storage().set(USER, user);
-        System.out.println("New user funds: " + user.funds);
+            final InternalOrderPay internalOrderPayMessage;
+            System.out.println(
+                    "Checking with user funds: "
+                            + user.funds
+                            + " on pay amount: "
+                            + paymentPayMessage.getPayAmount());
+            if (user.funds >= paymentPayMessage.getPayAmount()) {
+                System.out.println("User had funds: " + user.funds);
+                user.remove(paymentPayMessage.getPayAmount());
+                context.storage().set(USER, user);
+                System.out.println("New user funds: " + user.funds);
 
         internalOrderPayMessage = new InternalOrderPay(true);
       } else {
@@ -94,13 +94,16 @@ final class PaymentFn implements StatefulFunction {
         throw new RuntimeException("CALLER NOT PRESENT");
       }
 
-      context.send(
-          MessageBuilder.forAddress(caller)
-              .withCustomType(INTERNAL_ORDER_PAY, internalOrderPayMessage)
-              .build());
-    } else {
-      throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
-    }
+            context.send(
+                    MessageBuilder.forAddress(caller)
+                            .withCustomType(INTERNAL_ORDER_PAY, internalOrderPayMessage)
+                            .build());
+
+        } else if (message.is(PAYMENT_CREATE_USER_TYPE)) {
+            context.storage().set(USER, context.storage().get(USER).orElse(new User()));
+        } else {
+            throw new IllegalArgumentException("Unexpected message type: " + message.valueTypeName());
+        }
 
     return context.done();
   }

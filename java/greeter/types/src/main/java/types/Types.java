@@ -142,6 +142,12 @@ public final class Types {
 			JSON_OBJ_MAPPER::writeValueAsBytes,
 			bytes -> JSON_OBJ_MAPPER.readValue(bytes, InternalOrderPay.class));
 
+	public static final Type<PaymentCreateUser> PAYMENT_CREATE_USER_TYPE =
+			SimpleType.simpleImmutableTypeFrom(
+					TypeName.typeNameOf(TYPES_NAMESPACE, PaymentCreateUser.class.getName()),
+					JSON_OBJ_MAPPER::writeValueAsBytes,
+					bytes -> JSON_OBJ_MAPPER.readValue(bytes, PaymentCreateUser.class));
+
 	public static final Type<InternalStockPollValue> INTERNAL_STOCK_POLL_VALUE =
 		SimpleType.simpleImmutableTypeFrom(
 			TypeName.typeNameOf(TYPES_NAMESPACE, InternalStockPollValue.class.getName()),

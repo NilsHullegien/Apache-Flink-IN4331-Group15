@@ -63,10 +63,11 @@ public class Controller {
             if (outputEgressCheckoutStatus.getCheckout_status()) {
                 output.setResult(ResponseEntity.ok(outputObject));
             } else {
-                output.setResult(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+                ResponseEntity retEntity = new ResponseEntity("failure", HttpStatus.BAD_REQUEST);
+                output.setResult(retEntity);
             }
         } else {
-            System.out.println("Didnt identify return obj");
+            System.out.println("Didnt identify return obj 2");
 
             output.setResult(ResponseEntity.ok(outputObject));
         }
@@ -100,15 +101,7 @@ public class Controller {
     public void listenOrderCheckout(ConsumerRecord<Object, Object> data) throws JsonProcessingException {
         System.out.println("RECEIVED MESSAGE");
         System.out.println(data);
-        EgressCheckoutStatus msg = new ObjectMapper().readValue(data.value().toString(), EgressCheckoutStatus.class);
-        if (msg.getCheckout_status()) {
-            //200
-            dict.put(Integer.parseInt(data.key().toString()), "success");
-        } else {
-            //error
-            dict.put(Integer.parseInt(data.key().toString()), "failure");
-
-        }
+        dict.put(Integer.parseInt(data.key().toString()), new ObjectMapper().readValue(data.value().toString(), EgressCheckoutStatus.class));
     }
 
     //POST - creates an order for the given user, and returns an order_id
@@ -198,7 +191,7 @@ public class Controller {
     }
 
     //POST - creates an new user, returns a user id
-    @PostMapping(path = "/payment/create_user/")
+    @PostMapping(path = "/payment/create_user")
     public ResponseEntity<?> createUser() {
         this.template.send("payment-create_user", String.valueOf(++user_id), new PaymentCreateUser(user_id));
         return ResponseEntity.ok(new PaymentCreateUserResponse(user_id));
