@@ -72,27 +72,34 @@ public class Controller {
     }
 
     @KafkaListener(id = "egress-payment-add-funds", topics = "egress-payment-add-funds")
-    public void listenPaymentAddFunds (ConsumerRecord<Object, Object> data) throws JsonProcessingException {
+    public void listenPaymentAddFunds(ConsumerRecord<Object, Object> data) throws JsonProcessingException {
         dict.put(Integer.parseInt(data.key().toString()),
-            new ObjectMapper().readValue(data.value().toString(), PaymentAddFundsResponse.class));
+                new ObjectMapper().readValue(data.value().toString(), PaymentAddFundsResponse.class));
     }
 
     @KafkaListener(id = "egress-payment-status", topics = "egress-payment-status")
-    public void listenPaymentStatus (ConsumerRecord<Object, Object> data) throws JsonProcessingException {
+    public void listenPaymentStatus(ConsumerRecord<Object, Object> data) throws JsonProcessingException {
         dict.put(Integer.parseInt(data.key().toString()),
-            new ObjectMapper().readValue(data.value().toString(), PaymentStatusResponse.class));
+                new ObjectMapper().readValue(data.value().toString(), PaymentStatusResponse.class));
     }
 
     @KafkaListener(id = "egress-stock-find", topics = "egress-stock-find")
-    public void listenStockFind (ConsumerRecord<Object, Object> data) throws JsonProcessingException {
+    public void listenStockFind(ConsumerRecord<Object, Object> data) throws JsonProcessingException {
         dict.put(Integer.parseInt(data.key().toString()),
-            new ObjectMapper().readValue(data.value().toString(), StockFindResponse.class));
+                new ObjectMapper().readValue(data.value().toString(), StockFindResponse.class));
     }
 
     @KafkaListener(id = "egress-order-find", topics = "egress-order-find")
-    public void listenOrderFind (ConsumerRecord<Object, Object> data) throws JsonProcessingException {
+    public void listenOrderFind(ConsumerRecord<Object, Object> data) throws JsonProcessingException {
         dict.put(Integer.parseInt(data.key().toString()),
-            new ObjectMapper().readValue(data.value().toString(), OrderFindResponse.class));
+                new ObjectMapper().readValue(data.value().toString(), OrderFindResponse.class));
+    }
+
+    @KafkaListener(id = "egress-order-checkout", topics = "egress-order-checkout")
+    public void listenOrderCheckout(ConsumerRecord<Object, Object> data) throws JsonProcessingException {
+        System.out.println("RECEIVED MESSAGE");
+        System.out.println(data);
+        dict.put(Integer.parseInt(data.key().toString()), new ObjectMapper().readValue(data.value().toString(), EgressCheckoutStatus.class));
     }
 
     //POST - creates an order for the given user, and returns an order_id
@@ -132,9 +139,10 @@ public class Controller {
 
     //Get - remove a given item in the order given
     @PostMapping(path = "/orders/checkout/{order_id}")
-    public void checkoutOrder(@PathVariable Integer order_id) {
-        this.template.send("order-checkout", String.valueOf(order_id), new OrderCheckout(order_id));
-
+    public DeferredResult<ResponseEntity<?>> checkoutOrder(@PathVariable Integer order_id) {
+        Integer uId = rand.nextInt();
+        this.template.send("order-checkout", String.valueOf(order_id), new OrderCheckout(uId, order_id));
+        return deffer(uId);
     }
 
     //GET - retrieves the information of an item in stock
