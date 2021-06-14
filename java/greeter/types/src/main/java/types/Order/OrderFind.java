@@ -1,11 +1,9 @@
 package types.Order;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 public final class OrderFind {
 
-  @JsonProperty("uid")
+  @JsonProperty("uId")
   private Integer uId;
 
   public OrderFind() {}
@@ -14,8 +12,7 @@ public final class OrderFind {
     this.uId = uId;
   }
 
-
-  public Integer getUid() {
+  public Integer getUId() {
         return uId;
     }
 }

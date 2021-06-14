@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class StockFind {
 
-  @JsonProperty("uid")
+  @JsonProperty("uId")
   private Integer uId;
 
   public StockFind() {}

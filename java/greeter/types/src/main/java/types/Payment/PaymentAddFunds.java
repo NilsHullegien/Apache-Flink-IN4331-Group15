@@ -6,24 +6,25 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties
 public class PaymentAddFunds {
 
-  @JsonProperty("amount")
-  private Integer amount;
+    @JsonProperty("amount")
+    private Integer amount;
 
-  @JsonProperty("uId")
-  private Integer uId;
+    @JsonProperty("uId")
+    private Integer uId;
 
-  public PaymentAddFunds() {}
+    public PaymentAddFunds() {
+    }
 
-  public PaymentAddFunds(Integer uId, Integer amount) {
-      this.uId = uId;
-      this.amount = amount;
-  }
+    public PaymentAddFunds(Integer uId, Integer amount) {
+        this.uId = uId;
+        this.amount = amount;
+    }
 
-  public Integer getAmount() {
-    return amount;
-  }
+    public Integer getAmount() {
+        return amount;
+    }
 
-  public Integer getOrderUId() {
-      return uId;
-  }
+    public Integer getUId() {
+        return uId;
+    }
 }
