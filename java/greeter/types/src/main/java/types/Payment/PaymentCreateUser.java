@@ -4,16 +4,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PaymentCreateUser {
 	@JsonProperty("user_Id")
-	private Integer userId;
+	private String userId;
 
 	public PaymentCreateUser() {
 	}
 
-	public PaymentCreateUser(Integer userId) {
+	public PaymentCreateUser(String userId) {
 		this.userId = userId;
 	}
 
-	public Integer getUserId() {
+	public String getUserId() {
 		return userId;
 	}
 }

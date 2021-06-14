@@ -118,6 +118,10 @@ module:
                 valueType: types/types.Payment.PaymentFindUser
                 targets:
                   - greeter.fns/payment
+              - topic: payment-create_user
+                valueType: types/types.Payment.PaymentCreateUser
+                targets:
+                  - greeter.fns/payment
     egresses:
       - egress:
           meta:

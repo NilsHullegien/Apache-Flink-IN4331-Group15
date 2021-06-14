@@ -50,7 +50,7 @@ public class Controller {
         while (!dict.containsKey(key)) {
             ////System.out.println("WAITING for key: " + key + " in dict " + dict);
             try {
-                TimeUnit.MILLISECONDS.sleep(5);
+                TimeUnit.MILLISECONDS.sleep(3);
             } catch (Exception e) {
                 ////System.out.println("Deffered return exception");
             }
@@ -191,17 +191,18 @@ public class Controller {
 
     //Post - add funds to user his account
     @PostMapping(path = "/payment/add_funds/{user_id}/{amount}")
-    public DeferredResult<ResponseEntity<?>> addPayment(@PathVariable Integer user_id, @PathVariable Float amount) {
+    public DeferredResult<ResponseEntity<?>> addPayment(@PathVariable String user_id, @PathVariable Float amount) {
+        System.out.println("USER_ID: " + user_id + " and amount: " + amount);
         Integer uId = rand.nextInt();
-        this.template.send("payment-add-funds", String.valueOf(user_id), new PaymentAddFunds(uId, amount));
+        this.template.send("payment-add-funds", user_id, new PaymentAddFunds(uId, amount));
         return deffer(uId);
     }
 
     //POST - creates an new user, returns a user id
     @PostMapping(path = "/payment/create_user")
     public ResponseEntity<?> createUser() {
-        this.template.send("payment-create_user", String.valueOf(++user_id), new PaymentCreateUser(user_id));
-        return ResponseEntity.ok(new PaymentCreateUserResponse(user_id));
+        this.template.send("payment-create_user", String.valueOf(++user_id), new PaymentCreateUser(String.valueOf(user_id)));
+        return ResponseEntity.ok(new PaymentCreateUserResponse(String.valueOf(user_id)));
     }
 
     //GET - get credit from user.

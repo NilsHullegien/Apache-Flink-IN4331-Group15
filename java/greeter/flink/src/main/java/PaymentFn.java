@@ -17,6 +17,7 @@ import types.Internal.InternalOrderPay;
 import types.Internal.InternalPaymentPay;
 import types.Order.OrderFind;
 import types.Payment.PaymentAddFunds;
+import types.Payment.PaymentCreateUser;
 import types.Payment.PaymentFindUser;
 
 import static types.Types.*;
@@ -37,13 +38,13 @@ final class PaymentFn implements StatefulFunction {
     @Override
     public CompletableFuture<Void> apply(Context context, Message message) throws Exception {
         if (message.is(PAYMENT_ADD_FUNDS_JSON_TYPE)) {
-            ////System.out.println("APPLY PAYMENT ADD FUNDS");
+            System.out.println("APPLY PAYMENT ADD FUNDS");
             PaymentAddFunds addFundsMessage = message.as(PAYMENT_ADD_FUNDS_JSON_TYPE);
             User user = getUser(context);
-            ////System.out.println("Funds before: " + user.funds);
+            System.out.println("Funds before: " + user.getFunds());
             user.add(addFundsMessage.getAmount());
             context.storage().set(USER, user);
-            ////System.out.println("Funds after: " + user.funds);
+            System.out.println("Funds after: " + user.getFunds());
 
             EgressPaymentAddFunds egressMessage =
                     new EgressPaymentAddFunds(true);
@@ -104,7 +105,9 @@ final class PaymentFn implements StatefulFunction {
                             .build());
 
         } else if (message.is(PAYMENT_CREATE_USER_TYPE)) {
-            context.storage().set(USER, context.storage().get(USER).orElse(new User()));
+            PaymentCreateUser messagePayment = message.as(PAYMENT_CREATE_USER_TYPE);
+            User newUser = new User();
+            context.storage().set(USER, newUser);
 
         } else if (message.is(PAYMENT_FIND_USER_TYPE)) {
 
@@ -132,7 +135,7 @@ final class PaymentFn implements StatefulFunction {
     private User getUser(Context context) {
         User user = null;
         try {
-            user = context.storage().get(USER).orElse(new User());
+            user = context.storage().get(USER).orElseThrow(() -> new Exception("No user specified yet!"));
         } catch (Exception e) {
             e.printStackTrace();
         }
