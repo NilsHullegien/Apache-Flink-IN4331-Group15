@@ -93,8 +93,21 @@ final class OrderFn implements StatefulFunction {
         context.storage().set(UID, orderFindMessage.getUId());
 
         Order order = getOrderFromMessage(context);
+        order.setOrderId(orderFindMessage.getOrderId());
+        context.storage().set(ORDER, order);
         System.out.println(order.toString());
 
+        if (order.getItems().isEmpty()) {
+          EgressOrderFind egressMessage =
+              new EgressOrderFind(order.getOrderId(), order.isPaid(), order.getItems(), order.getUserId(), 0);
+
+          context.send(
+              KafkaEgressMessage.forEgress(KAFKA_EGRESS)
+                  .withTopic("egress-order-find")
+                  .withUtf8Key(Integer.toString(orderFindMessage.getUId()))
+                  .withValue(EGRESS_ORDER_FIND, egressMessage)
+                  .build());
+        }
 
         int stock_poll_out = context.storage().get(STOCK_POLL_OUT).orElse(0);
 
@@ -114,9 +127,7 @@ final class OrderFn implements StatefulFunction {
                     .withCustomType(INTERNAL_STOCK_POLL_VALUE, internalStockPollValueMessage)
                     .build());
           }
-
         }
-
       } else if (message.is(ORDER_ADD_ITEM_JSON_TYPE)) {
         System.out.println("Add Order Item");
 
@@ -302,7 +313,7 @@ final class OrderFn implements StatefulFunction {
           // TODO: first parameter in egressorderfind should be orderID, but orderFn is unaware of this...
           // TODO: should be handled by web server
           EgressOrderFind egressMessage =
-              new EgressOrderFind(specialKey, order.isPaid(), order.getItems(), order.getUserId(),
+              new EgressOrderFind(order.getOrderId(), order.isPaid(), order.getItems(), order.getUserId(),
                   context.storage().get(ORDER_COST).orElse(-1));
 
           context.send(
@@ -384,6 +395,9 @@ final class OrderFn implements StatefulFunction {
     @JsonProperty("user_id")
     private final int userId;
 
+    @JsonProperty("order_id")
+    private int orderId;
+
     @JsonProperty("items")
     private final HashMap<Integer, Integer> items;
 
@@ -410,6 +424,7 @@ final class OrderFn implements StatefulFunction {
     @JsonCreator
     public Order(@JsonProperty("user_id") int userId) {
       this.userId = userId;
+      this.orderId = -1;
       this.hasPaid = false;
       this.isDeleted = false;
       this.items = new HashMap<>();
@@ -442,5 +457,11 @@ final class OrderFn implements StatefulFunction {
     public HashMap<Integer, Integer> getItems() { return this.items;}
 
     public int getUserId() { return this.userId; }
+
+    public int getOrderId() { return this.orderId; }
+
+    public void setOrderId(int orderId) {
+      this.orderId = orderId;
+    }
   }
 }

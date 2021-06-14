@@ -126,7 +126,7 @@ final class StockFn implements StatefulFunction {
         internalCallbackMessage = new InternalStockCheckoutCallback(true, summed_cost);
         System.out.println("Had enough items");
 
-        // TODO kinda dirty hack but okay for now
+        // kinda dirty hack but okay for now
       } else {
         internalCallbackMessage = new InternalStockCheckoutCallback(false, 0);
         System.out.println("Did not have enough items in stock for request");

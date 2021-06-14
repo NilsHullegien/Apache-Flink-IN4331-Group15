@@ -12,11 +12,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
-import types.Response.OrderCreateResponse;
-import types.Response.PaymentStatusResponse;
-import types.Stock.*;
-import types.Payment.*;
 import types.Order.*;
+import types.Payment.*;
+import types.Response.*;
+import types.Stock.*;
 
 import java.util.Random;
 
@@ -29,6 +28,7 @@ public class Controller {
 
     private int order_id = 0;
     private int item_id = 0;
+    private int user_id = 0;
     volatile Hashtable<Integer, Object> dict = new Hashtable<>();
     private final Random rand = new Random();
 
@@ -59,8 +59,9 @@ public class Controller {
     }
 
     @KafkaListener(id = "egress-payment-add-funds", topics = "egress-payment-add-funds")
-    public void listenPaymentAddFunds (ConsumerRecord<Object, Object> data) {
-        dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
+    public void listenPaymentAddFunds (ConsumerRecord<Object, Object> data) throws JsonProcessingException {
+        dict.put(Integer.parseInt(data.key().toString()),
+            new ObjectMapper().readValue(data.value().toString(), PaymentAddFundsResponse.class));
     }
 
     @KafkaListener(id = "egress-payment-status", topics = "egress-payment-status")
@@ -70,14 +71,15 @@ public class Controller {
     }
 
     @KafkaListener(id = "egress-stock-find", topics = "egress-stock-find")
-    public void listenStockFind (ConsumerRecord<Object, Object> data) {
-        System.out.println(Integer.parseInt(data.key().toString()));
-        dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
+    public void listenStockFind (ConsumerRecord<Object, Object> data) throws JsonProcessingException {
+        dict.put(Integer.parseInt(data.key().toString()),
+            new ObjectMapper().readValue(data.value().toString(), StockFindResponse.class));
     }
 
     @KafkaListener(id = "egress-order-find", topics = "egress-order-find")
-    public void listenOrderFind (ConsumerRecord<Object, Object> data) {
-        dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
+    public void listenOrderFind (ConsumerRecord<Object, Object> data) throws JsonProcessingException {
+        dict.put(Integer.parseInt(data.key().toString()),
+            new ObjectMapper().readValue(data.value().toString(), OrderFindResponse.class));
     }
 
     //POST - creates an order for the given user, and returns an order_id
@@ -99,7 +101,7 @@ public class Controller {
     @GetMapping(path = "/orders/find/{order_id}")
     public DeferredResult<ResponseEntity<?>> findOrder(@PathVariable Integer order_id) {
         Integer uId = rand.nextInt();
-        this.template.send("order-find", String.valueOf(order_id), new OrderFind(uId));
+        this.template.send("order-find", String.valueOf(order_id), new OrderFind(uId, order_id));
         return deffer(uId);
     }
 
@@ -129,11 +131,11 @@ public class Controller {
         return deffer(uId);
     }
 
-    //GET - creates a item in the stock
-    @GetMapping(path = "/stock/item/create/{price}")
-    public String createStock(@PathVariable Integer price) {
+    //POST - creates a item in the stock
+    @PostMapping(path = "/stock/item/create/{price}")
+    public ResponseEntity<?> createStock(@PathVariable Integer price) {
         this.template.send("stock-item-create", String.valueOf(++item_id), new StockItemCreate(price));
-        return "{\"item_id\":" + item_id + "}";
+        return ResponseEntity.ok(new StockItemCreateResponse(item_id));
     }
 
     //Post - add an item form the stock by the given amount
@@ -163,4 +165,12 @@ public class Controller {
         this.template.send("payment-add-funds", String.valueOf(user_id), new PaymentAddFunds(uId, amount));
         return deffer(uId);
     }
+
+    //POST - creates an new user, returns a user id
+    @PostMapping(path = "/payment/create_user/")
+    public ResponseEntity<?> createUser() {
+        this.template.send("payment-create_user", String.valueOf(++user_id), new PaymentCreateUser(user_id));
+        return ResponseEntity.ok(new PaymentCreateUserResponse(user_id));
+    }
+
 }
