@@ -298,6 +298,8 @@ final class OrderFn implements StatefulFunction {
             System.out.println("SPECIAL KEY SHOULD BE IN ORDER, BUT IS NOT");
           }
 
+          // TODO: first parameter in egressorderfind should be orderID, but orderFn is unaware of this...
+          // TODO: should be handled by web server
           EgressOrderFind egressMessage =
               new EgressOrderFind(specialKey, order.isPaid(), order.getItems(), order.getUserId(),
                   context.storage().get(ORDER_COST).orElse(-1));
