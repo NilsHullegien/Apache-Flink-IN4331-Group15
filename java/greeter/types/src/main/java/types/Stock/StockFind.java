@@ -1,6 +1,5 @@
 package types.Stock;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class StockFind {

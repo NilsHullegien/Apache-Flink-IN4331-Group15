@@ -32,11 +32,9 @@ import org.apache.flink.statefun.sdk.java.types.SimpleType;
 import org.apache.flink.statefun.sdk.java.types.Type;
 import types.Egress.EgressOrderFind;
 import types.Egress.EgressPaymentStatus;
-import types.Egress.EgressStockFind;
 import types.Internal.*;
 import types.Order.*;
 import types.Stock.StockAdd;
-import types.Stock.StockFind;
 
 import static types.Types.*;
 
@@ -210,7 +208,7 @@ final class OrderFn implements StatefulFunction {
             .storage()
             .set(
                 ORDER_COST,
-                context.storage().get(ORDER_COST).orElse(0) + internalMessage.getSummed_cost());
+                context.storage().get(ORDER_COST).orElse(0) + internalMessage.getSummedCost());
 
         if (internalMessage.isOk()) {
           if (stockPollOut == 0
@@ -292,14 +290,15 @@ final class OrderFn implements StatefulFunction {
           final OrderFind orderFindMessage = message.as(ORDER_FIND_JSON_TYPE);
 
           EgressOrderFind egressMessage =
-              new EgressOrderFind(orderFindMessage.getOrderId(), order.isPaid(), order.items, order.userId, 69);
+              new EgressOrderFind(orderFindMessage.getUid(), order.isPaid(), order.getItems(), order.getUserId(),
+                  context.storage().get(ORDER_COST).orElse(-1));
 
-          System.out.println("very special key: " + orderFindMessage.getOrderId().toString());
+          System.out.println("very special key: " + orderFindMessage.getUid().toString());
 
           context.send(
               KafkaEgressMessage.forEgress(KAFKA_EGRESS)
                   .withTopic("egress-order-find")
-                  .withUtf8Key(orderFindMessage.getOrderId().toString())
+                  .withUtf8Key(orderFindMessage.getUid().toString())
                   .withValue(EGRESS_ORDER_FIND, egressMessage)
                   .build());
         }
@@ -429,5 +428,9 @@ final class OrderFn implements StatefulFunction {
     public void setPaid(Boolean newPaid) {
       this.hasPaid = newPaid;
     }
+
+    public HashMap<Integer, Integer> getItems() { return this.items;}
+
+    public int getUserId() { return this.userId; }
   }
 }

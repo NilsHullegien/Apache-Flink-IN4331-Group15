@@ -96,7 +96,7 @@ public class Controller {
     @GetMapping(path = "/orders/find/{order_id}")
     public DeferredResult<ResponseEntity<?>> findOrder(@PathVariable Integer order_id) {
         Integer uId = rand.nextInt();
-        this.template.send("order-find", String.valueOf(order_id), new OrderFind(uId, order_id));
+        this.template.send("order-find", String.valueOf(order_id), new OrderFind(uId));
         return deffer(String.valueOf(uId));
     }
 

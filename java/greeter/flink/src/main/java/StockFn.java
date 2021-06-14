@@ -142,7 +142,7 @@ final class StockFn implements StatefulFunction {
       System.out.println(
           "RETURNING Internal stock checkout callback message: "
               + "Cost: "
-              + internalCallbackMessage.getSummed_cost()
+              + internalCallbackMessage.getSummedCost()
               + " and isOk: "
               + internalCallbackMessage.isOk());
       context.send(

@@ -7,20 +7,20 @@ public class InternalStockCheckoutCallback {
   private Boolean ok;
 
   @JsonProperty("summed_cost")
-  private Integer summed_cost;
+  private Integer summedCost;
 
   public InternalStockCheckoutCallback() {}
 
-  public InternalStockCheckoutCallback(boolean ok, int summed_cost) {
+  public InternalStockCheckoutCallback(boolean ok, int summedCost) {
     this.ok = ok;
-    this.summed_cost = summed_cost;
+    this.summedCost = summedCost;
   }
 
   public Boolean isOk() {
     return ok;
   }
 
-  public Integer getSummed_cost() {
-    return summed_cost;
+  public Integer getSummedCost() {
+    return summedCost;
   }
 }
