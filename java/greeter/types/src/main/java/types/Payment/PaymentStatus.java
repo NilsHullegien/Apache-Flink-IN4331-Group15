@@ -1,7 +1,9 @@
 package types.Payment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties
 public class PaymentStatus {
 
     @JsonProperty("order_id")

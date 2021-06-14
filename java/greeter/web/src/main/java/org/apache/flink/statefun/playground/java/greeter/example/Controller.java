@@ -52,8 +52,8 @@ public class Controller {
 
         System.out.println("received return key");
         String outputString = dict.get(key);
-        dict.remove(key);
         output.setResult(ResponseEntity.ok(outputString));
+        return;
     }
 
     @KafkaListener(id = "egress-payment-add-funds", topics = "egress-payment-add-funds")
@@ -68,6 +68,7 @@ public class Controller {
 
     @KafkaListener(id = "egress-stock-find", topics = "egress-stock-find")
     public void listenStockFind (ConsumerRecord<Object, Object> data) {
+        System.out.println(Integer.parseInt(data.key().toString()));
         dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
     }
 
@@ -80,7 +81,7 @@ public class Controller {
     @GetMapping(path = "/orders/create/{user_id}")
     public String createOrder(@PathVariable Integer user_id) {
         this.template.send("order-create", String.valueOf(++order_id), new OrderCreate(user_id));
-        deffer(String.valueOf(order_id));
+        //deffer(String.valueOf(order_id)); TODO
 
         return "{\"order_id\":" + order_id + "}";
     }

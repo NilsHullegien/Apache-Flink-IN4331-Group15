@@ -47,7 +47,7 @@ final class PaymentFn implements StatefulFunction {
       context.send(
               KafkaEgressMessage.forEgress(KAFKA_EGRESS)
                       .withTopic("egress-payment-add-funds")
-                      .withUtf8Key("1")
+                   .withUtf8Key(String.valueOf(addFundsMessage.getOrderUId()))
                       .withValue(EGRESS_PAYMENT_ADD_FUNDS, egressMessage)
                       .build());
 
