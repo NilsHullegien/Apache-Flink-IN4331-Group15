@@ -47,13 +47,15 @@ final class OrderFn implements StatefulFunction {
       ValueSpec.named("restock_sent").withBooleanType();
   private static final ValueSpec<Boolean> IS_PAYING =
       ValueSpec.named("is_paying").withBooleanType();
+  private static final ValueSpec<Integer> UID =
+          ValueSpec.named("uid").withIntType();
 
   private static final ValueSpec<Integer> ORDER_COST = ValueSpec.named("order_cost").withIntType();
 
   static final TypeName TYPENAME = TypeName.typeNameOf("greeter.fns", "order");
   static final StatefulFunctionSpec SPEC =
       StatefulFunctionSpec.builder(TYPENAME)
-          .withValueSpecs(ORDER, STOCK_POLL_OUT, RESTOCK_SENT, ORDER_COST, IS_PAYING)
+          .withValueSpecs(ORDER, STOCK_POLL_OUT, RESTOCK_SENT, ORDER_COST, IS_PAYING, UID)
           .withSupplier(OrderFn::new)
           .build();
 
@@ -86,10 +88,14 @@ final class OrderFn implements StatefulFunction {
       } else if (message.is(ORDER_FIND_JSON_TYPE)) {
         System.out.println("Find Order");
 
+        OrderFind orderFindMessage = message.as(ORDER_FIND_JSON_TYPE);
+
         context.storage().set(ORDER_COST, 0);
+        context.storage().set(UID, orderFindMessage.getUid());
 
         Order order = getOrderFromMessage(context);
         System.out.println(order.toString());
+
 
         int stock_poll_out = context.storage().get(STOCK_POLL_OUT).orElse(0);
 
@@ -287,18 +293,19 @@ final class OrderFn implements StatefulFunction {
 
           Order order = getOrderFromMessage(context);
 
-          final OrderFind orderFindMessage = message.as(ORDER_FIND_JSON_TYPE);
+          int specialKey = context.storage().get(UID).orElse(-1);
+          if (specialKey == -1) {
+            System.out.println("SPECIAL KEY SHOULD BE IN ORDER, BUT IS NOT");
+          }
 
           EgressOrderFind egressMessage =
-              new EgressOrderFind(orderFindMessage.getUid(), order.isPaid(), order.getItems(), order.getUserId(),
+              new EgressOrderFind(specialKey, order.isPaid(), order.getItems(), order.getUserId(),
                   context.storage().get(ORDER_COST).orElse(-1));
-
-          System.out.println("very special key: " + orderFindMessage.getUid().toString());
 
           context.send(
               KafkaEgressMessage.forEgress(KAFKA_EGRESS)
                   .withTopic("egress-order-find")
-                  .withUtf8Key(orderFindMessage.getUid().toString())
+                  .withUtf8Key(Integer.toString(specialKey))
                   .withValue(EGRESS_ORDER_FIND, egressMessage)
                   .build());
         }
