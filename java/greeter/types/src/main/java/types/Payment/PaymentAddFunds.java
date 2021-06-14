@@ -9,7 +9,7 @@ public class PaymentAddFunds {
     @JsonProperty("amount")
     private Integer amount;
 
-    @JsonProperty("uId")
+    @JsonProperty("uid")
     private Integer uId;
 
     public PaymentAddFunds() {
