@@ -1,5 +1,7 @@
 package org.apache.flink.statefun.playground.java.greeter.example;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
+import types.Response.OrderCreateResponse;
+import types.Response.PaymentStatusResponse;
 import types.Stock.*;
 import types.Payment.*;
 import types.Order.*;
@@ -25,16 +29,16 @@ public class Controller {
 
     private int order_id = 0;
     private int item_id = 0;
-    volatile Hashtable<Integer, String> dict = new Hashtable<Integer, String>();
-    private Random rand = new Random();
+    volatile Hashtable<Integer, Object> dict = new Hashtable<>();
+    private final Random rand = new Random();
 
     @Autowired
     private KafkaTemplate<Object, Object> template;
 
-    public DeferredResult<ResponseEntity<?>> deffer(String key) {
+    public DeferredResult<ResponseEntity<?>> deffer(Integer key) {
         DeferredResult<ResponseEntity<?>> output = new DeferredResult<>();
         ForkJoinPool.commonPool().submit(() -> {
-            defferedReturn(output, Integer.parseInt(key));
+            defferedReturn(output, key);
             System.out.println("RETURN DEFERRED FOR KEY " + key);
         });
         return output;
@@ -42,18 +46,16 @@ public class Controller {
 
     public void defferedReturn(DeferredResult<ResponseEntity<?>> output, Integer key) {
         while (!dict.containsKey(key)) {
-//            System.out.println("WAITING for key: " + key + " in dict " + dict);
+            System.out.println("WAITING for key: " + key + " in dict " + dict);
             try {
-                TimeUnit.MILLISECONDS.sleep(100);
+                TimeUnit.MILLISECONDS.sleep(250);
             } catch (Exception e) {
                 System.out.println("Deffered return exception");
             }
         }
 
-        System.out.println("received return key");
-        String outputString = dict.get(key);
-        output.setResult(ResponseEntity.ok(outputString));
-        return;
+        Object outputObject = dict.get(key);
+        output.setResult(ResponseEntity.ok(outputObject));
     }
 
     @KafkaListener(id = "egress-payment-add-funds", topics = "egress-payment-add-funds")
@@ -62,8 +64,9 @@ public class Controller {
     }
 
     @KafkaListener(id = "egress-payment-status", topics = "egress-payment-status")
-    public void listenPaymentStatus (ConsumerRecord<Object, Object> data) {
-        dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
+    public void listenPaymentStatus (ConsumerRecord<Object, Object> data) throws JsonProcessingException {
+        dict.put(Integer.parseInt(data.key().toString()),
+            new ObjectMapper().readValue(data.value().toString(), PaymentStatusResponse.class));
     }
 
     @KafkaListener(id = "egress-stock-find", topics = "egress-stock-find")
@@ -77,13 +80,13 @@ public class Controller {
         dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
     }
 
-    //Get - creates an order for the given user, and returns an order_id
-    @GetMapping(path = "/orders/create/{user_id}")
-    public String createOrder(@PathVariable Integer user_id) {
+    //POST - creates an order for the given user, and returns an order_id
+    @PostMapping(path = "/orders/create/{user_id}")
+    public ResponseEntity<?> createOrder(@PathVariable Integer user_id) {
         this.template.send("order-create", String.valueOf(++order_id), new OrderCreate(user_id));
         //deffer(String.valueOf(order_id)); TODO
 
-        return "{\"order_id\":" + order_id + "}";
+        return ResponseEntity.ok(new OrderCreateResponse(order_id));
     }
 
     //DELETE - deletes an order by ID
@@ -97,7 +100,7 @@ public class Controller {
     public DeferredResult<ResponseEntity<?>> findOrder(@PathVariable Integer order_id) {
         Integer uId = rand.nextInt();
         this.template.send("order-find", String.valueOf(order_id), new OrderFind(uId));
-        return deffer(String.valueOf(uId));
+        return deffer(uId);
     }
 
     //Post - adds a given item in the order given
@@ -123,7 +126,7 @@ public class Controller {
     public DeferredResult<ResponseEntity<?>> findStock(@PathVariable Integer item_id) {
         Integer uId = rand.nextInt();
         this.template.send("stock-find", String.valueOf(item_id), new StockFind(uId));
-        return deffer(String.valueOf(uId));
+        return deffer(uId);
     }
 
     //GET - creates a item in the stock
@@ -150,7 +153,7 @@ public class Controller {
     public DeferredResult<ResponseEntity<?>> statusPayment(@PathVariable Integer order_id) {
         Integer uId = rand.nextInt();
         this.template.send("payment-status", String.valueOf(order_id), new OrderPaymentStatus(uId));
-        return deffer(String.valueOf(uId));
+        return deffer(uId);
     }
 
     //Get - add funds to user his account
@@ -158,6 +161,6 @@ public class Controller {
     public DeferredResult<ResponseEntity<?>> addPayment(@PathVariable Integer user_id, @PathVariable Integer amount) {
         Integer uId = rand.nextInt();
         this.template.send("payment-add-funds", String.valueOf(user_id), new PaymentAddFunds(uId, amount));
-        return deffer(String.valueOf(uId));
+        return deffer(uId);
     }
 }

@@ -93,6 +93,10 @@ module:
                 valueType: types/types.Order.OrderRemoveItem
                 targets:
                   - greeter.fns/order
+              - topic: payment-status
+                valueType: types/types.Order.OrderPaymentStatus
+                targets:
+                  - greeter.fns/order
       - ingress:
           meta:
             type: io.statefun.kafka/ingress
@@ -106,10 +110,6 @@ module:
             startupPosition:
               type: earliest
             topics:
-              - topic: payment-status
-                valueType: types/types.Payment.PaymentStatus
-                targets:
-                  - greeter.fns/payment
               - topic: payment-add-funds
                 valueType: types/types.Payment.PaymentAddFunds
                 targets:

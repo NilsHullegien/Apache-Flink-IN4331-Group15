@@ -183,8 +183,10 @@ final class OrderFn implements StatefulFunction {
         System.out.println("APPLY ORDER INTERNAL PAYMENT CANCEL --- DO NOT USE");
       } else if (message.is(ORDER_PAYMENT_STATUS_JSON_TYPE)) {
         OrderPaymentStatus orderPaymentStatus = message.as(ORDER_PAYMENT_STATUS_JSON_TYPE);
-
+        System.out.println("ORDER PAYMENT STATUS");
+        System.out.println(orderPaymentStatus.getUId());
         Order order = getOrderFromMessage(context);
+        System.out.println(order.isPaid());
         EgressPaymentStatus egressMessage =
             new EgressPaymentStatus(order.isPaid());
 
