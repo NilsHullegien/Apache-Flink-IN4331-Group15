@@ -159,4 +159,16 @@ public final class Types {
 					TypeName.typeNameOf(TYPES_NAMESPACE, EgressOrderFind.class.getName()),
 					JSON_OBJ_MAPPER::writeValueAsBytes,
 					bytes -> JSON_OBJ_MAPPER.readValue(bytes, EgressOrderFind.class));
+
+	public static final Type<EgressPaymentStatus> EGRESS_PAYMENT_STATUS =
+			SimpleType.simpleImmutableTypeFrom(
+					TypeName.typeNameOf(TYPES_NAMESPACE, EgressPaymentStatus.class.getName()),
+					JSON_OBJ_MAPPER::writeValueAsBytes,
+					bytes -> JSON_OBJ_MAPPER.readValue(bytes, EgressPaymentStatus.class));
+
+	public static final Type<EgressPaymentAddFunds> EGRESS_PAYMENT_ADD_FUNDS =
+			SimpleType.simpleImmutableTypeFrom(
+					TypeName.typeNameOf(TYPES_NAMESPACE, EgressPaymentAddFunds.class.getName()),
+					JSON_OBJ_MAPPER::writeValueAsBytes,
+					bytes -> JSON_OBJ_MAPPER.readValue(bytes, EgressPaymentAddFunds.class));
 }

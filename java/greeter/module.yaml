@@ -135,3 +135,12 @@ module:
             deliverySemantic:
               type: exactly-once
               transactionTimeoutMillis: 10000
+      - egress:
+          meta:
+            type: io.statefun.kafka/egress
+            id: payment-namespace/payment
+          spec:
+            address: kafka:9092
+            deliverySemantic:
+              type: exactly-once
+              transactionTimeoutMillis: 10000
