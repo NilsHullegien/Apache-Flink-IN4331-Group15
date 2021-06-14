@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.listener.ErrorHandler;
+import org.springframework.kafka.listener.ListenerUtils;
 import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 import org.springframework.kafka.support.converter.RecordMessageConverter;
 import org.springframework.kafka.support.converter.StringJsonMessageConverter;
@@ -20,9 +22,9 @@ public class Application {
 	}
 
 	@Bean
-	public SeekToCurrentErrorHandler errorHandler(KafkaOperations<Object, Object> template) {
-		return new SeekToCurrentErrorHandler(
-			new DeadLetterPublishingRecoverer(template), new FixedBackOff(1000L, 2));
+	public ErrorHandler errorHandler() {
+		return new SeekToCurrentErrorHandler((rec, ex) -> System.out.println(ListenerUtils.recordToString(rec, true) + "\n"
+			+ ex.getMessage()));
 	}
 
 	@Bean

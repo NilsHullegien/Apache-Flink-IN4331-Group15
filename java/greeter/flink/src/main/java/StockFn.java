@@ -67,8 +67,7 @@ final class StockFn implements StatefulFunction {
               .withValue(EGRESS_STOCK_FIND, egressMessage)
               .build());
 
-      // TODO: EGRESS
-      System.out.println("Price: " + product.price + ", Quantity: " + product.quantity);
+      System.out.println("Price: " + product.getPrice() + ", Quantity: " + product.getQuantity());
 
     } else if (message.is(STOCK_SUBTRACT_JSON_TYPE)) { // Can go under 0
       System.out.println("Apply Stock Subtract TYPE");

@@ -4,5 +4,8 @@ spring:
     producer:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.deserializer.value.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.json.value.default.type: org.apache.flink.statefun.playground.java.greeter.example.DefaultClass

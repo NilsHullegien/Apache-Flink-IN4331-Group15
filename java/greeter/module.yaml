@@ -124,3 +124,5 @@ module:
             deliverySemantic:
               type: exactly-once
               transactionTimeoutMillis: 10000
+              # producer:
+              #      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
