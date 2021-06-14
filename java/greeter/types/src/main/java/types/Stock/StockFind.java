@@ -1,7 +1,9 @@
 package types.Stock;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties
 public final class StockFind {
   @JsonProperty("stock_find_identifier")
   private Integer stockFindIdentifier;
