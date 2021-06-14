@@ -71,18 +71,13 @@ public class Controller {
         dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
     }
 
-    @KafkaListener(id = "egress-order-create", topics = "egress-order-create")
-    public void listenOrderCreate (ConsumerRecord<Object, Object> data) {
-        dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
-    }
-
-    @KafkaListener(id = "egress-order-checkout", topics = "egress-order-checkout")
-    public void listenOrderCheckout (ConsumerRecord<Object, Object> data) {
-        dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
-    }
-
     @KafkaListener(id = "egress-stock-find", topics = "egress-stock-find")
     public void listenStockFind (ConsumerRecord<Object, Object> data) {
+        dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
+    }
+
+    @KafkaListener(id = "egress-order-find", topics = "egress-order-find")
+    public void listenOrderFind (ConsumerRecord<Object, Object> data) {
         dict.put(Integer.parseInt(data.key().toString()), data.value().toString());
     }
 
@@ -121,10 +116,9 @@ public class Controller {
     }
 
     //Get - remove a given item in the order given
-    @GetMapping(path = "/orders/checkout/{order_id}")
-    public DeferredResult<ResponseEntity<?>> checkoutOrder(@PathVariable Integer order_id) {
+    @PostMapping(path = "/orders/checkout/{order_id}")
+    public void checkoutOrder(@PathVariable Integer order_id) {
         this.template.send("order-checkout", String.valueOf(order_id), new OrderCheckout(order_id));
-        return deffer(String.valueOf(order_id));
     }
 
     //GET - retrieves the information of an item in stock
