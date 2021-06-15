@@ -189,7 +189,7 @@ public class Controller {
     //Post - add funds to user his account
     @PostMapping(path = "/payment/add_funds/{user_id}/{amount}")
     public DeferredResult<ResponseEntity<?>> addPayment(@PathVariable String user_id, @PathVariable Float amount) {
-        System.out.println("USER_ID: " + user_id + " and amount: " + amount);
+        //System.out.println("USER_ID: " + user_id + " and amount: " + amount);
         Integer uId = rand.nextInt();
         this.template.send("payment-add-funds", user_id, new PaymentAddFunds(uId, amount));
         return deffer(uId);

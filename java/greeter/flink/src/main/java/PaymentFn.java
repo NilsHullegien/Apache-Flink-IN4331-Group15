@@ -41,10 +41,10 @@ final class PaymentFn implements StatefulFunction {
 //            System.out.println("APPLY PAYMENT ADD FUNDS");
             PaymentAddFunds addFundsMessage = message.as(PAYMENT_ADD_FUNDS_JSON_TYPE);
             User user = getUser(context);
-            System.out.println("Funds before: " + user.getFunds());
+//            System.out.println("Funds before: " + user.getFunds());
             user.add(addFundsMessage.getAmount());
             context.storage().set(USER, user);
-            System.out.println("Funds after: " + user.getFunds());
+//            System.out.println("Funds after: " + user.getFunds());
 
             EgressPaymentAddFunds egressMessage =
                     new EgressPaymentAddFunds(true);
