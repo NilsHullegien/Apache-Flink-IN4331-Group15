@@ -8,11 +8,11 @@ public class EgressStockFind {
   private Integer stock;
 
   @JsonProperty("price")
-  private Integer price;
+  private Float price;
 
   public EgressStockFind() {}
 
-  public EgressStockFind(Integer stock, Integer price) {
+  public EgressStockFind(Integer stock, Float price) {
     this.stock = stock;
     this.price = price;
   }

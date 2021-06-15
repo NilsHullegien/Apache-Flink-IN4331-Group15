@@ -4,15 +4,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class StockItemCreateResponse {
 	@JsonProperty("item_id")
-	private Integer itemId;
+	private String itemId;
 
 	public StockItemCreateResponse() {}
 
-	public StockItemCreateResponse(Integer itemId) {
+	public StockItemCreateResponse(String itemId) {
 		this.itemId = itemId;
 	}
 
-	public Integer getItemId() {
+	public String getItemId() {
 		return itemId;
 	}
 }

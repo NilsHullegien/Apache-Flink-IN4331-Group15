@@ -38,7 +38,7 @@ final class PaymentFn implements StatefulFunction {
     @Override
     public CompletableFuture<Void> apply(Context context, Message message) throws Exception {
         if (message.is(PAYMENT_ADD_FUNDS_JSON_TYPE)) {
-            System.out.println("APPLY PAYMENT ADD FUNDS");
+//            System.out.println("APPLY PAYMENT ADD FUNDS");
             PaymentAddFunds addFundsMessage = message.as(PAYMENT_ADD_FUNDS_JSON_TYPE);
             User user = getUser(context);
             System.out.println("Funds before: " + user.getFunds());

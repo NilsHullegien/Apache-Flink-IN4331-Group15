@@ -4,15 +4,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class StockItemCreate {
   @JsonProperty("price")
-  private Integer price;
+  private Float price;
 
   public StockItemCreate() {}
 
-  public StockItemCreate(Integer price) {
+  public StockItemCreate(Float price) {
     this.price = price;
   }
 
-  public Integer getPrice() {
+  public Float getPrice() {
     return price;
   }
 }

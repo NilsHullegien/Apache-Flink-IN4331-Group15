@@ -119,14 +119,14 @@ final class StockFn implements StatefulFunction {
       context.storage().set(PRODUCT, product);
 
       if (product.getQuantity() >= 0) {
-        int summed_cost = internalStockSubtractMessage.getValue() * product.getPrice();
+        Float summed_cost = internalStockSubtractMessage.getValue() * product.getPrice();
         //System.out.println("Price: " + summed_cost);
         internalCallbackMessage = new InternalStockCheckoutCallback(true, summed_cost);
         //System.out.println("Had enough items");
 
         // kinda dirty hack but okay for now
       } else {
-        internalCallbackMessage = new InternalStockCheckoutCallback(false, 0);
+        internalCallbackMessage = new InternalStockCheckoutCallback(false, 0.0f);
         //System.out.println("Did not have enough items in stock for request");
       }
 
@@ -197,13 +197,13 @@ final class StockFn implements StatefulFunction {
             bytes -> mapper.readValue(bytes, Product.class));
 
     @JsonProperty("price")
-    private final int price;
+    private final Float price;
 
     @JsonProperty("quantity")
     private int quantity;
 
     @JsonCreator
-    public Product(@JsonProperty("price") int price, @JsonProperty("quantity") Integer quantity) {
+    public Product(@JsonProperty("price") Float price, @JsonProperty("quantity") Integer quantity) {
       this.price = price;
       this.quantity = quantity;
     }
@@ -221,7 +221,7 @@ final class StockFn implements StatefulFunction {
       return "Product{" + "price=" + price + ", quantity=" + quantity + '}';
     }
 
-    public int getPrice() {
+    public Float getPrice() {
       return price;
     }
 
